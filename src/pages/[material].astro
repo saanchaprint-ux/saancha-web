@@ -1,0 +1,143 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site.js';
+import { materialsContent } from '../data/materials-content.js';
+
+export function getStaticPaths() {
+  return Object.keys(materialsContent).map(slug => ({ params: { material: slug } }));
+}
+
+const { material } = Astro.params;
+const c = materialsContent[material];
+const wa = site.whatsapp;
+const slug = material;
+
+// SEO: Product + FAQ + Breadcrumb schema
+const jsonld = {
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"Product","name":`${c.label} Casting Molds`,"brand":{"@type":"Brand","name":site.name},
+     "description":c.seoDesc,
+     "offers":{"@type":"AggregateOffer","priceCurrency":"INR","availability":"https://schema.org/InStock",
+       "lowPrice": c.products.reduce((m,p)=>Math.min(m, +p.price.replace(/[^0-9]/g,'')), 1e9),
+       "highPrice": c.products.reduce((m,p)=>Math.max(m, +p.price.replace(/[^0-9]/g,'')), 0)}},
+    {"@type":"FAQPage","mainEntity":c.faq.map(([q,a])=>({"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}}))},
+    {"@type":"BreadcrumbList","itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":site.domain},
+      {"@type":"ListItem","position":2,"name":c.label,"item":`${site.domain}/${slug}`}]}
+  ]
+};
+const customSlug = c.label.toLowerCase().replace(/ & /g,'-').replace(/ /g,'-');
+---
+<Base title={c.seoTitle} description={c.seoDesc} ogImage={c.heroPoster} jsonld={jsonld}>
+  <Nav slot="nav" />
+
+  <header class="mpage-hero">
+    <div class="mvid">
+      <video class="autovid" muted playsinline autoplay loop preload="auto" poster={c.heroPoster}>
+        <source src={c.heroVideo} type="video/mp4" />
+      </video>
+    </div>
+    <div class="wrap">
+      <div class="crumb mono"><a href="/">Home</a> / <span>{c.label}</span></div>
+      <h1>{c.hero}</h1>
+      <p class="lede">{c.lede}</p>
+      <div class="facts">
+        {c.facts.map(([b,s]) => <div><b>{b}</b><span class="mono">{s}</span></div>)}
+      </div>
+    </div>
+    <div class="hcue mono"><i></i> Scroll</div>
+  </header>
+
+  <section class="msplit">
+    <div class="wrap in">
+      <div class="txt">
+        <span class="kicker" style="display:block;margin-bottom:16px">Why {c.label.toLowerCase()} molds</span>
+        <h2>{c.whyH}</h2>
+        {c.whyP.map(p => <p>{p}</p>)}
+        <div class="pts">
+          {c.points.map(([b,s]) => <div class="pt"><span class="d"></span><div><b>{b}</b><span>{s}</span></div></div>)}
+        </div>
+      </div>
+      <div class="vis"><img src={c.whyImg} alt={`${c.label} cast piece`} /></div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <div class="wrap">
+      <span class="kicker" style="display:block;margin-bottom:14px">How it works</span>
+      <h2>From your idea to a mold you own.</h2>
+      <div class="row">
+        <div class="s"><div class="n">01</div><h4>Share</h4><p>Send a sketch, a photo, or the actual piece you want to cast.</p></div>
+        <div class="s"><div class="n">02</div><h4>Master</h4><p>We model and 3D-print the master, and you approve it before anything is cast.</p></div>
+        <div class="s"><div class="n">03</div><h4>Cast the mold</h4><p>Silicone is poured around the master and cured into your {c.label.toLowerCase()} mold.</p></div>
+        <div class="s"><div class="n">04</div><h4>Produce</h4><p>Pour, set, demould — repeat. Or leave the mold with us and order finished pieces.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <main class="readymade">
+    <div class="wrap">
+      <div class="grid-head">
+        <span class="kicker" style="display:block;margin-bottom:14px">Ready-made &middot; off the shelf</span>
+        <h2>In stock now.</h2>
+        <p class="lede">Fixed prices, ready to ship. Every design here started as a custom job — and can be adapted to yours.</p>
+      </div>
+      <div class="pgrid">
+        {c.products.map(p => (
+          <article class="pcard">
+            <div class="shot"><span class="tag2">In stock</span><img src={p.img} alt={`${p.name} ${c.label} mold`} loading="lazy" /></div>
+            <div class="b">
+              <h3>{p.name}</h3><span class="meta">{p.meta}</span>
+              <div class="row">
+                <span class="price">{p.price}<small>Fixed · ready-made</small></span>
+                <a class="enq" href={`https://wa.me/${wa}?text=${encodeURIComponent(`Hi, I'm interested in the ${p.name} (${c.label}) ready-made mold.`)}`} target="_blank" rel="noopener">Order &rarr;</a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="pricenote mono">Ready-made molds are fixed price. Custom molds are priced by quantity — the more you order, the lower the per-unit cost.</p>
+      <div class="custombar">
+        <div><h3>Nothing here fits?</h3><p>Send a sketch, a photo, or the actual product. We build a custom {c.label.toLowerCase()} mold around it — priced by your order size.</p></div>
+        <a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20a%20custom%20${customSlug}%20mold.`} class="btn" target="_blank" rel="noopener" data-mag>Get a custom quote</a>
+      </div>
+    </div>
+  </main>
+
+  <section class="uses">
+    <div class="wrap">
+      <span class="kicker" style="display:block;margin-bottom:14px">What people cast</span>
+      <h2>{c.label} molds, put to work.</h2>
+      <div class="row">{c.uses.map(u => <span class="chip">{u}</span>)}</div>
+    </div>
+  </section>
+
+  <section class="mfaq">
+    <div class="wrap">
+      <span class="kicker" style="display:block;margin-bottom:14px">{c.label} — questions</span>
+      <h2>Good to know.</h2>
+      <div class="faq">
+        {c.faq.map(([q,a],i) => (
+          <details open={i===0}><summary>{q}</summary><p>{a}</p></details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="ctaband">
+    <div class="wrap">
+      <span class="kicker" style="display:block;margin-bottom:20px">Start your {c.label.toLowerCase()} mold</span>
+      <h2>Order one, or a thousand.</h2>
+      <p>No minimum order. Ready-made ships at a fixed price; custom is quoted by quantity. Message us and we&rsquo;ll take it from there.</p>
+      <div class="btns">
+        <a href={`https://wa.me/${wa}?text=Hi%2C%20I%20need%20a%20${customSlug}%20mold.`} class="btn" target="_blank" rel="noopener" data-mag data-cur="CHAT">Start on WhatsApp</a>
+        <a href="/#materials" class="btn ghost" data-mag>Other materials</a>
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

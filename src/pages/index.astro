@@ -1,0 +1,170 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site, asset, video } from '../data/site.js';
+
+const wa = site.whatsapp;
+// hero + band videos (Seedance)
+const heroVid = video("mold-rotate.mp4", "hf_20260824_035050_fc4dfd89-cdb1-4a4e-b5ef-4bfa6d5378b7.mp4");
+const demoldVid = video("mold-demold.mp4", "hf_20260905_103654_3226d0f5-524b-4a36-9d3c-722e3eb5f20f.mp4");
+const rangeVid = video("range.mp4", "hf_20260824_044007_8c4635fa-026f-48fd-a032-211a2a67a150.mp4");
+const heroPoster = asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png");
+
+const mats = [
+  { slug:"candles",  n:"M/01", label:"Candles", desc:"Ribbed pillars, tapers, sculpted shapes. Wax releases clean from flexible silicone.", img: asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png") },
+  { slug:"soap",     n:"M/02", label:"Soap & bath", desc:"Faceted bars, embeds, layered pours. Crisp edges, every batch.", img: asset("soap.png","hf_20260905_141240_d85649fa-8c7e-4df4-a784-a745e6f621a8.png") },
+  { slug:"concrete", n:"M/03", label:"Concrete", desc:"Planters, trays, homeware. Two-part molds handle undercuts and depth.", img: asset("concrete.png","hf_20260905_141240_875068c4-8347-45f0-9442-fd4e8a93c35f.png") },
+  { slug:"resin",    n:"M/04", label:"Resin", desc:"Art objects, coasters, jewellery. High-detail transfer for fine facets.", img: asset("resin.png","hf_20260905_141240_ec9d52eb-d3b8-4311-97e1-9617674d5ec4.png") },
+];
+
+const jsonld = {
+  "@context":"https://schema.org","@type":"LocalBusiness","name":site.name,
+  "description":"Casting molds for candles, soap, resin and concrete, designed and manufactured in Delhi.",
+  "slogan":site.tagline,"telephone":"+"+site.whatsapp,
+  "address":{"@type":"PostalAddress","addressLocality":"Delhi","addressCountry":"IN"},"areaServed":"IN"
+};
+---
+<Base jsonld={jsonld}>
+  <Nav slot="nav" />
+
+  <section class="hero" id="top">
+    <div class="hero-vid">
+      <video class="autovid" muted playsinline autoplay loop preload="auto" poster={heroPoster}>
+        <source src={heroVid} type="video/mp4" />
+      </video>
+    </div>
+    <span class="scrollcue mono">Scroll &darr;</span>
+    <div class="wrap hero-inner">
+      <span class="kicker rvu">{site.name} &middot; Casting Molds &middot; Delhi</span>
+      <h1>
+        <span class="ln"><span>Turning concepts</span></span>
+        <span class="ln"><span>into <span class="serif-it">reality.</span></span></span>
+      </h1>
+      <div class="hero-foot">
+        <div>
+          <p class="lede rvu">We design and manufacture casting molds — candles, soap, resin, concrete. Order one, not five hundred. Made in Delhi, around your product, in a week.</p>
+          <div class="hero-cta rvu">
+            <a href={`https://wa.me/${wa}?text=Hi%2C%20I%20need%20a%20mold`} class="btn" target="_blank" rel="noopener" data-mag data-cur="CHAT">Start on WhatsApp</a>
+            <a href="/#process" class="btn ghost" data-mag>See the process</a>
+          </div>
+        </div>
+        <div class="hero-stats rvu">
+          <div><b data-count="250" data-suffix="+">0</b><span class="mono">Customers</span></div>
+          <div><b>No</b><span class="mono">Minimum order</span></div>
+          <div><b>5–7</b><span class="mono">Days</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marq"><div class="marq-t" id="marq"></div></div>
+
+  <section class="sec statement" id="intro">
+    <div class="wrap">
+      <span class="kicker rvu" style="display:block;margin-bottom:30px">01 — What we do</span>
+      <p class="big" id="stText">Anyone can print plastic. We design the negative space — the exact hollow your product is born from — and cut it so precisely that every single casting comes out identical.</p>
+    </div>
+  </section>
+
+  <section class="scrub left" id="process">
+    <div class="scrub-holder">
+      <div class="scrub-media"><video class="autovid" muted playsinline autoplay loop preload="auto" poster={heroPoster}><source src={demoldVid} type="video/mp4" /></video></div>
+      <div class="wrap scrub-copy">
+        <div class="col rvu">
+          <span class="kicker">02 — The mold opens</span>
+          <h2>Sealed,<br>then released.</h2>
+          <p>Two halves of silicone clamp shut around your shape. Pour, set, and the mold flexes open — no cracking, no forcing. Every rib and edge transferred exactly.</p>
+          <div class="mini mono"><span><b>100s</b> pulls</span><span><b>0</b> cracking</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="materials">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker rvu">03 — Materials</span>
+        <h2 class="rvu"><span class="ln"><span>One process.</span></span><span class="ln"><span><span class="serif-it">Anything</span> castable.</span></span></h2>
+        <p class="lede rvu">Tell us what you're pouring — we pick the material. Each range has its own ready-made molds, or we build custom around your product.</p>
+      </div>
+      <div class="mats">
+        {mats.map(m => (
+          <a class="mat rvu" href={`/${m.slug}`}>
+            <div class="fig"><span class="num">{m.n}</span><img src={m.img} alt={m.label} /></div>
+            <div class="body"><h3>{m.label}</h3><p>{m.desc}</p><span class="mat-cta mono">View ready molds &rarr;</span></div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="scrub right" id="range">
+    <div class="scrub-holder">
+      <div class="scrub-media"><video class="autovid" muted playsinline autoplay loop preload="auto" poster={heroPoster}><source src={rangeVid} type="video/mp4" /></video></div>
+      <div class="wrap scrub-copy">
+        <div class="col rvu">
+          <span class="kicker">04 — The output</span>
+          <h2>One, or<br>ten thousand.</h2>
+          <p>What comes out is retail-ready — the standard your customers hold in their hands. Start with one mold to test a shape, scale to full production when it sells. Same mold, no re-tooling.</p>
+          <div class="mini mono"><span><b>No</b> minimum order</span><span><b>5–7</b> day build</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="tiers">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker rvu">05 — Three ways to work</span>
+        <h2 class="rvu"><span class="ln"><span>Pick the depth</span></span><span class="ln"><span>you <span class="serif-it">need.</span></span></span></h2>
+      </div>
+      <div class="tiers-grid">
+        <div class="tier rvu"><span class="t-no">Tier 01</span><h3>Trial mold</h3><p>A directly printed mold for proving a shape. Cheaper, faster, holds up for a limited run. Validate the form before you invest in tooling.</p><span class="fit">For — testing a product</span></div>
+        <div class="tier feat rvu"><span class="t-no">Tier 02 · Popular</span><h3>Production mold</h3><p>Cast in silicone from a printed master. Fine detail, clean release, hundreds of pulls. Where most customers end up.</p><span class="fit">For — regular batches</span></div>
+        <div class="tier rvu"><span class="t-no">Tier 03</span><h3>We cast for you</h3><p>The mold stays with us and you order finished pieces. No equipment, no curing, no mess — you just receive stock.</p><span class="fit">For — brands scaling up</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" style="background:var(--bg-2)">
+    <div class="wrap">
+      <div class="sec-head"><span class="kicker rvu">06 — Questions</span><h2 class="rvu"><span class="ln"><span>The things</span></span><span class="ln"><span>people <span class="serif-it">ask.</span></span></span></h2></div>
+      <div class="faq">
+        <details open><summary>What's the minimum order?</summary><p>One mold. No minimum quantity and no setup fee beyond the design charge on custom work. That's the main reason people come to us instead of importing.</p></details>
+        <details><summary>How long does a custom mold take?</summary><p>Typically 5 to 7 days from approved design to delivered mold. Complex or multi-part molds take longer — we tell you upfront, not halfway through.</p></details>
+        <details><summary>What material will my mold be made from?</summary><p>Depends on what you're casting and at what temperature. Most production molds are silicone from a 3D-printed master; trial molds are often printed directly. Tell us the product and we specify it.</p></details>
+        <details><summary>How many castings will one mold last?</summary><p>A silicone production mold typically handles several hundred pulls with proper care. A trial mold is built for a much shorter run. We state the expected life before you order.</p></details>
+        <details><summary>Can you emboss my brand logo into the mold?</summary><p>Yes — one of the most common requests. Send your logo as a vector if you have one, or a clean image if you don't, and we build it into the form.</p></details>
+        <details><summary>Do you ship outside Delhi?</summary><p>Yes, we ship across India. Local pickup is available in Delhi if you'd rather collect and inspect in person.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec contact" id="contact">
+    <div class="wrap">
+      <div class="sec-head"><span class="kicker rvu">07 — Get in touch</span><h2 class="rvu"><span class="ln"><span>Tell us what</span></span><span class="ln"><span>you're <span class="serif-it">casting.</span></span></span></h2></div>
+      <div class="c-grid">
+        <form class="rvu" id="form" data-wa={wa}>
+          <div class="two">
+            <div class="field"><label class="mono" for="f-name">Your name</label><input type="text" id="f-name" required /></div>
+            <div class="field"><label class="mono" for="f-brand">Brand / business</label><input type="text" id="f-brand" placeholder="Optional" /></div>
+          </div>
+          <div class="two">
+            <div class="field"><label class="mono" for="f-cast">What are you casting?</label><input type="text" id="f-cast" placeholder="e.g. candles, soap, planters" required /></div>
+            <div class="field"><label class="mono" for="f-qty">Quantity</label><input type="text" id="f-qty" placeholder="e.g. 50, 500, or just testing" /></div>
+          </div>
+          <div class="field"><label class="mono" for="f-msg">Details</label><textarea id="f-msg" placeholder="Shape, size, logo, deadline…"></textarea></div>
+          <button type="submit" class="btn" data-mag>Send on WhatsApp</button>
+        </form>
+        <div class="info rvu">
+          <div><span class="mono">WhatsApp</span><a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">{site.phone}</a></div>
+          <div><span class="mono">Workshop</span><p>{site.city}</p></div>
+          <div><span class="mono">Response</span><p>Usually the same day</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

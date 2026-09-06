@@ -1,0 +1,54 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site.js';
+const {
+  title = `${site.name} — Casting Molds, Made in ${site.city}`,
+  description = `${site.name} designs and manufactures casting molds in Delhi — candles, soap, resin, concrete. No minimum order, 5–7 day turnaround.`,
+  ogImage = '',
+  jsonld = null,
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, site.domain).href;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
+</head>
+<body>
+  <!-- logo mark (shared) -->
+  <svg style="display:none" aria-hidden="true">
+    <symbol id="mark" viewBox="0 0 100 128">
+      <path d="M50 30 C50 30 33 30 27 20 C21 10 30 4 30 4 C30 4 44 8 48 18 C50 23 50 30 50 30Z" fill="currentColor" opacity=".9"/>
+      <path d="M50 34 L50 22" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <path d="M50 34 L84 54 L84 94 L50 114 L16 94 L16 54 Z" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linejoin="round"/>
+      <path d="M50 34 L50 74 M50 74 L16 54 M50 74 L84 54" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>
+    </symbol>
+  </svg>
+
+  <div id="cur"></div><div id="curR"><b></b></div>
+  <div class="prog" id="prog"></div>
+
+  <slot name="nav" />
+  <slot />
+  <slot name="footer" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" is:inline></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" is:inline></script>
+  <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js" is:inline></script>
+  <script src="/site.js" is:inline></script>
+</body>
+</html>

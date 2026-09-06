@@ -1,0 +1,107 @@
+/* Saancha — shared client JS (all pages). GSAP + Lenis loaded before this. */
+(function(){
+  const REDUCED=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const TOUCH=matchMedia('(hover:none)').matches||innerWidth<900;
+  if(window.gsap&&window.ScrollTrigger)gsap.registerPlugin(ScrollTrigger);
+
+  /* smooth scroll */
+  let lenis=null;
+  if(window.Lenis&&!REDUCED&&!TOUCH){
+    lenis=new Lenis({lerp:.09,smoothWheel:true});
+    lenis.on('scroll',ScrollTrigger.update);
+    gsap.ticker.add(t=>lenis.raf(t*1000));gsap.ticker.lagSmoothing(0);
+  }
+  const goTo=s=>{const el=document.querySelector(s);if(!el)return;
+    lenis?lenis.scrollTo(el,{offset:-70}):el.scrollIntoView({behavior:'smooth'});};
+  document.querySelectorAll('a[href^="/#"],a[href^="#"]').forEach(a=>{
+    const href=a.getAttribute('href');
+    const hash=href.includes('#')?'#'+href.split('#')[1]:'';
+    // only intercept same-page anchors
+    if((href.startsWith('#')||href.startsWith('/#')) && document.querySelector(hash)){
+      a.addEventListener('click',e=>{e.preventDefault();closeMenu();goTo(hash);});
+    }
+  });
+
+  const yr=document.getElementById('yr'); if(yr)yr.textContent=new Date().getFullYear();
+
+  /* reveals */
+  function reveal(){
+    document.querySelectorAll('.ln').forEach(l=>{const sp=l.querySelector('span');if(sp)gsap.to(sp,{yPercent:0,duration:1.05,ease:'expo.out',scrollTrigger:{trigger:l,start:'top 90%'}});});
+    document.querySelectorAll('.rvu').forEach(el=>gsap.to(el,{opacity:1,y:0,duration:.8,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 92%'}}));
+    document.querySelectorAll('[data-count]').forEach(el=>{
+      const end=+el.dataset.count,sfx=el.dataset.suffix||'',o={v:0};
+      gsap.to(o,{v:end,duration:1.9,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 94%'},onUpdate:()=>el.textContent=Math.round(o.v)+sfx});});
+  }
+  if(window.gsap){gsap.set('.ln > span',{yPercent:112});gsap.set('.rvu',{opacity:0,y:24});reveal();}
+
+  /* nav solidify + progress */
+  const nav=document.getElementById('nav');
+  if(window.ScrollTrigger){
+    ScrollTrigger.create({start:60,onUpdate:s=>nav&&nav.classList.toggle('solid',s.scroll()>60)});
+    const prog=document.getElementById('prog');
+    if(prog)ScrollTrigger.create({start:0,end:'max',onUpdate:s=>prog.style.width=(s.progress*100)+'%'});
+  }
+  if(nav&&scrollY>60)nav.classList.add('solid');
+
+  /* autoplay + light parallax on any .autovid */
+  document.querySelectorAll('video.autovid').forEach(v=>{
+    const go=()=>v.play().catch(()=>{});
+    v.muted=true;v.addEventListener('canplay',go,{once:true});go();
+    if(window.ScrollTrigger){
+      const sec=v.closest('section,header')||v.parentElement;
+      ScrollTrigger.create({trigger:sec,start:'top bottom',end:'bottom top',
+        onEnter:go,onEnterBack:go,onLeave:()=>v.pause(),onLeaveBack:()=>v.pause()});
+    }
+  });
+
+  /* immersive banner parallax (material pages): video drifts, copy lifts + fades */
+  if(window.ScrollTrigger){
+    const mh=document.querySelector('.mpage-hero');
+    if(mh){
+      const mv=mh.querySelector('.mvid'), mw=mh.querySelector('.wrap');
+      if(mv)gsap.to(mv,{yPercent:14,scale:1.06,ease:'none',
+        scrollTrigger:{trigger:mh,start:'top top',end:'bottom top',scrub:.6}});
+      if(mw)gsap.to(mw,{yPercent:-22,opacity:.2,ease:'none',
+        scrollTrigger:{trigger:mh,start:'top top',end:'bottom top',scrub:.6}});
+    }
+  }
+
+  /* menu */
+  const menu=document.getElementById('menu');
+  window.closeMenu=function(){if(!menu||!menu.classList.contains('open'))return;menu.classList.remove('open');lenis&&lenis.start();
+    gsap.to(menu,{clipPath:'inset(0 0 100% 0)',duration:.55,ease:'expo.inOut'});};
+  function openMenu(){if(!menu)return;menu.classList.add('open');lenis&&lenis.stop();
+    gsap.timeline().to(menu,{clipPath:'inset(0 0 0% 0)',duration:.7,ease:'expo.inOut'})
+      .from('#menu li a',{yPercent:110,opacity:0,duration:.6,ease:'expo.out',stagger:.05},'-=.3');}
+  const burger=document.getElementById('burger');if(burger)burger.onclick=openMenu;
+  const mClose=document.getElementById('mClose');if(mClose)mClose.onclick=closeMenu;
+  addEventListener('keydown',e=>e.key==='Escape'&&closeMenu());
+  document.querySelectorAll('#menu a').forEach(a=>a.addEventListener('click',closeMenu));
+
+  /* custom cursor */
+  if(!TOUCH){
+    const d=document.getElementById('cur'),r=document.getElementById('curR'),lbl=r&&r.querySelector('b');
+    if(d&&r){
+      let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+      addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;d.style.transform='translate('+mx+'px,'+my+'px)';});
+      (function t(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;r.style.transform='translate('+rx+'px,'+ry+'px)';requestAnimationFrame(t);})();
+      const bind=()=>document.querySelectorAll('a,button,summary,[data-cur]').forEach(el=>{
+        if(el.dataset.bd)return;el.dataset.bd=1;
+        el.addEventListener('mouseenter',()=>{r.classList.add('big');if(lbl)lbl.textContent=el.dataset.cur||'';});
+        el.addEventListener('mouseleave',()=>{r.classList.remove('big');if(lbl)lbl.textContent='';});});
+      bind();new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
+      document.querySelectorAll('[data-mag]').forEach(el=>{
+        el.addEventListener('mousemove',e=>{const b=el.getBoundingClientRect();
+          gsap.to(el,{x:(e.clientX-b.left-b.width/2)*.2,y:(e.clientY-b.top-b.height/2)*.3,duration:.5,ease:'power3.out'});});
+        el.addEventListener('mouseleave',()=>gsap.to(el,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)'}));});
+    }
+  }
+
+  /* WhatsApp form (home) */
+  const form=document.getElementById('form');
+  if(form){form.addEventListener('submit',e=>{e.preventDefault();
+    const v=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+    const wa=form.dataset.wa;
+    const t=`New enquiry — Saancha\n\nName: ${v('f-name')}\nBrand: ${v('f-brand')||'—'}\nCasting: ${v('f-cast')}\nQuantity: ${v('f-qty')}\nDetails: ${v('f-msg')||'—'}`;
+    window.open(`https://wa.me/${wa}?text=${encodeURIComponent(t)}`,'_blank');});}
+})();

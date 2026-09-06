@@ -1,0 +1,40 @@
+---
+import { site, nav, materials } from '../data/site.js';
+const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
+---
+<nav id="nav">
+  <div class="wrap nav-in">
+    <a href="/" class="brand" data-mag>
+      <svg><use href="#mark"/></svg>
+      <span class="brand-txt">{site.name}<em>.</em></span>
+    </a>
+    <div class="nav-links">
+      <a href="/#process">Process</a>
+      <div class="navdrop">
+        <a href="/#materials" class="navdrop-t">Materials <span class="chev">&#9662;</span></a>
+        <div class="navdrop-menu">
+          {materials.map(m => <a href={`/${m.slug}`}>{m.label}</a>)}
+        </div>
+      </div>
+      <a href="/#tiers">Options</a>
+      <a href={wa} class="btn" target="_blank" rel="noopener" data-mag>WhatsApp</a>
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i></button>
+    </div>
+  </div>
+</nav>
+
+<div id="menu">
+  <button class="close" id="mClose">CLOSE &#10005;</button>
+  <div class="wrap">
+    <ol>
+      <li><a href="/">Home</a></li>
+      {materials.map(m => <li><a href={`/${m.slug}`}>{m.label}</a></li>)}
+      <li><a href="/#tiers">Options</a></li>
+      <li><a href="/#contact">Contact</a></li>
+    </ol>
+    <div class="m-foot">
+      <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener">{site.phone}</a>
+      <span class="mono">{site.city}</span>
+    </div>
+  </div>
+</div>
