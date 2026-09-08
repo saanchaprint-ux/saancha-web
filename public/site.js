@@ -43,14 +43,42 @@
   }
   if(nav&&scrollY>60)nav.classList.add('solid');
 
-  /* autoplay + light parallax on any .autovid */
+  /* autoplay + SEAMLESS cross-fade loop + light parallax on any .autovid */
   document.querySelectorAll('video.autovid').forEach(v=>{
-    const go=()=>v.play().catch(()=>{});
-    v.muted=true;v.addEventListener('canplay',go,{once:true});go();
+    v.muted=true; v.loop=false; v.playsInline=true;
+    const FADE=0.6; // seconds of overlap at the loop point
+
+    // build a second copy stacked on top for the cross-fade
+    const wrap=v.parentElement;
+    if(getComputedStyle(wrap).position==='static') wrap.style.position='relative';
+    v.style.position='absolute'; v.style.inset='0'; v.style.width='100%'; v.style.height='100%'; v.style.objectFit='cover'; v.style.transition='opacity .6s linear';
+    const v2=v.cloneNode(true);
+    v2.style.opacity='0';
+    v.parentElement.appendChild(v2);
+    const pair=[v,v2]; let active=0;
+
+    const play=el=>el.play().catch(()=>{});
+    pair.forEach(el=>{el.muted=true;el.addEventListener('canplay',()=>{if(el===pair[active])play(el);},{once:true});});
+    play(v);
+
+    function tick(){
+      const cur=pair[active];
+      if(cur.duration && cur.currentTime >= cur.duration - FADE){
+        const next=pair[1-active];
+        next.currentTime=0; play(next);
+        next.style.opacity='1'; cur.style.opacity='0';
+        active=1-active;
+      }
+    }
+    // check ~every frame
+    const iv=setInterval(tick,80);
+
     if(window.ScrollTrigger){
       const sec=v.closest('section,header')||v.parentElement;
+      const resume=()=>play(pair[active]);
+      const pause=()=>pair.forEach(el=>el.pause());
       ScrollTrigger.create({trigger:sec,start:'top bottom',end:'bottom top',
-        onEnter:go,onEnterBack:go,onLeave:()=>v.pause(),onLeaveBack:()=>v.pause()});
+        onEnter:resume,onEnterBack:resume,onLeave:pause,onLeaveBack:pause});
     }
   });
 
