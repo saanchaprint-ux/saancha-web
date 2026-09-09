@@ -21,7 +21,7 @@ const mats = [
 const jsonld = {
   "@context":"https://schema.org","@type":"LocalBusiness","name":site.name,
   "description":"Casting molds for candles, soap, resin and concrete, designed and manufactured in Delhi.",
-  "slogan":site.tagline,"telephone":"+"+site.whatsapp,
+  "slogan":site.tagline,"email":site.email,
   "address":{"@type":"PostalAddress","addressLocality":"Delhi","addressCountry":"IN"},"areaServed":"IN"
 };
 ---
@@ -158,7 +158,8 @@ const jsonld = {
           <button type="submit" class="btn" data-mag>Send on WhatsApp</button>
         </form>
         <div class="info rvu">
-          <div><span class="mono">WhatsApp</span><a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">{site.phone}</a></div>
+          <div><span class="mono">WhatsApp</span><a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">Message us on WhatsApp</a></div>
+          <div><span class="mono">Email</span><a href={`mailto:${site.email}`}>{site.email}</a></div>
           <div><span class="mono">Workshop</span><p>{site.city}</p></div>
           <div><span class="mono">Response</span><p>Usually the same day</p></div>
         </div>

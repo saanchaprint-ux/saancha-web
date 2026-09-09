@@ -1,16 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
 //  SAANCHA — saari site ki settings EK jagah.
 //  Non-technical? Bas yahan ke values badlo. Nav, footer, prices,
-//  phone number — sab yahin se control hota hai.
+//  Nav, footer, email, WhatsApp — sab yahin se control hota hai.
 // ═══════════════════════════════════════════════════════════════
 
 export const site = {
   name: "Saancha",
   tagline: "Turning concepts into reality",
-  phone: "+91 88005 59984",
-  whatsapp: "918800559984",      // country code + number, no + or spaces
+  email: "saanchaprint@gmail.com",   // public contact — shown as written text
+  whatsapp: "918800559984",          // used ONLY for WhatsApp links (not shown as number)
   city: "Delhi, India",
-  domain: "https://saancha.in",  // apna domain aane pe badlo
+  domain: "https://saancha.in",      // apna domain aane pe badlo
 };
 
 // CDN base — abhi Higgsfield se. Apni images public/images/ me daal ke
