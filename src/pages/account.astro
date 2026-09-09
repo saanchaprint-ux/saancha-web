@@ -1,0 +1,59 @@
+---
+export const prerender = false;
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { getUser, supabaseServer } from '../lib/supabase.js';
+
+const user = await getUser(Astro.cookies);
+if (!user) return Astro.redirect('/login');
+
+const sb = supabaseServer(Astro.cookies);
+const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+
+const name = profile?.full_name || user.email;
+const list = orders || [];
+const wa = '918800559984';
+const statusColor = { pending:'#E6A15C','in-production':'#8FA98C', shipped:'#5FD189', delivered:'#5FD189' };
+---
+<Base title="My account — Saancha" description="Your Saancha orders.">
+  <Nav slot="nav" />
+  <main class="account">
+    <div class="wrap">
+      <div class="acc-head">
+        <div>
+          <span class="kicker">My account</span>
+          <h1>Hello, {name}.</h1>
+          <p class="sub">{user.email}</p>
+        </div>
+        <a href="/logout" class="btn ghost">Log out</a>
+      </div>
+
+      <div class="acc-orders">
+        <div class="acc-bar"><h2>Your orders</h2><a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20to%20place%20an%20order`} target="_blank" rel="noopener" class="btn">New order on WhatsApp</a></div>
+
+        {list.length === 0 ? (
+          <div class="empty">
+            <p>No orders yet.</p>
+            <p class="sub">Once you place an order, it'll show up here with its status.</p>
+            <a href="/#materials" class="btn ghost">Browse molds</a>
+          </div>
+        ) : (
+          <div class="otable">
+            {list.map(o => (
+              <div class="orow">
+                <div class="ocol"><span class="mono">Order</span><b>{o.order_no || o.id.slice(0,8)}</b></div>
+                <div class="ocol"><span class="mono">Item</span><b>{o.item}</b><span class="meta">{o.material} · qty {o.quantity}</span></div>
+                <div class="ocol"><span class="mono">Amount</span><b>{o.amount ? '₹'+o.amount : '—'}</b></div>
+                <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${statusColor[o.status]||'#E6A15C'};border-color:${statusColor[o.status]||'#E6A15C'}`}>{o.status}</span></div>
+                <div class="ocol"><a class="reorder" href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi, I want to reorder: '+o.item)}`} target="_blank" rel="noopener">Reorder →</a></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </main>
+  <Footer slot="footer" />
+</Base>

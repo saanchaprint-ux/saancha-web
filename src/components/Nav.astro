@@ -16,6 +16,7 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
         </div>
       </div>
       <a href="/#tiers">Options</a>
+      <a href="/account" class="nav-acc">Account</a>
       <a href={wa} class="btn" target="_blank" rel="noopener" data-mag>WhatsApp</a>
       <button class="burger" id="burger" aria-label="Menu"><i></i><i></i></button>
     </div>
@@ -29,6 +30,7 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
       <li><a href="/">Home</a></li>
       {materials.map(m => <li><a href={`/${m.slug}`}>{m.label}</a></li>)}
       <li><a href="/#tiers">Options</a></li>
+      <li><a href="/account">My account</a></li>
       <li><a href="/#contact">Contact</a></li>
     </ol>
     <div class="m-foot">

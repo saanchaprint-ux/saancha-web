@@ -1,0 +1,6 @@
+---
+export const prerender = false;
+Astro.cookies.delete('sb-access-token', { path: '/' });
+Astro.cookies.delete('sb-refresh-token', { path: '/' });
+return Astro.redirect('/login');
+---

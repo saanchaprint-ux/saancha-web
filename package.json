@@ -12,7 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@astrojs/node": "^8.3.4",
     "@astrojs/sitemap": "^3.7.4",
+    "@supabase/supabase-js": "^2.116.0",
     "astro": "^4.16.19"
   },
   "type": "module"
