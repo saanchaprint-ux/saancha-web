@@ -1,9 +1,9 @@
 import { defineConfig } from 'astro/config';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel/serverless';
 
 export default defineConfig({
   site: 'https://saancha.in',
-  output: 'hybrid',                 // pages static by default; opt-in SSR per page
-  adapter: node({ mode: 'standalone' }),
+  output: 'hybrid',                 // marketing pages static; login/account SSR
+  adapter: vercel(),
   build: { inlineStylesheets: 'auto' },
 });
