@@ -1,0 +1,37 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { adminPassword, setAdminCookie } from '../../lib/admin.js';
+
+let error = '';
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const pwd = form.get('password')?.toString() || '';
+  if (!adminPassword()) error = 'Admin password not configured on server.';
+  else if (pwd === adminPassword()) {
+    setAdminCookie(Astro.cookies);
+    return Astro.redirect('/admin');
+  } else error = 'Wrong password.';
+}
+---
+<Base title="Admin — Saancha">
+  <main class="auth">
+    <div class="auth-card">
+      <span class="kicker">Saancha Admin</span>
+      <h1>Admin login.</h1>
+      <p class="sub">Staff only.</p>
+      {error && <p class="err">{error}</p>}
+      <form method="POST">
+        <div class="field"><label class="mono" for="password">Password</label>
+          <div class="pass-wrap">
+            <input id="password" name="password" type="password" required />
+            <button type="button" class="pass-eye" data-eye="password" aria-label="Show password">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="btn" type="submit">Enter</button>
+      </form>
+    </div>
+  </main>
+</Base>

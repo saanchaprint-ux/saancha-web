@@ -417,3 +417,24 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 #menu .m-account{display:flex;flex-direction:column}
 .forgot-link{display:inline-block;margin:-6px 0 10px;color:var(--fg-45);font-size:.85rem;text-decoration:none}
 .forgot-link:hover{color:var(--amber)}
+
+/* ── admin ── */
+.admin{min-height:100svh;padding:120px 0 100px}
+.admin-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:30px}
+.admin-head .kicker{display:block;margin-bottom:10px}
+.admin-head h1{font-size:clamp(2rem,4vw,3rem)}
+.admin-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:clamp(22px,3vw,36px);margin-bottom:26px}
+.admin-card h2{font-size:1.3rem;margin-bottom:20px}
+.admin-form{display:flex;flex-direction:column;gap:16px}
+.admin-form .ag{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:700px){.admin-form .ag{grid-template-columns:1fr}}
+.admin-form label{display:flex;flex-direction:column;gap:6px;color:var(--fg-45);font-size:.8rem}
+.admin-form input,.admin-form select{padding:12px 14px;border:1px solid var(--line);background:var(--bg);color:#F2EFE9;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:.95rem;-webkit-text-fill-color:#F2EFE9}
+.admin-form input:focus,.admin-form select:focus{outline:none;border-color:var(--amber)}
+.admin-form .btn{align-self:flex-start;margin-top:6px}
+.atable{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.arow{background:var(--panel);display:grid;grid-template-columns:1.2fr 2fr auto;gap:16px;padding:16px 20px;align-items:center}
+@media(max-width:700px){.arow{grid-template-columns:1fr}}
+.arow div b{display:block;font-family:'Fraunces',serif;font-weight:500}
+.arow div span{color:var(--fg-45);font-size:.82rem}
+.astatus select{padding:8px 12px;border:1px solid var(--line);background:var(--bg);color:#F2EFE9;border-radius:8px;font-family:'Space Mono',monospace;font-size:.72rem;-webkit-text-fill-color:#F2EFE9}

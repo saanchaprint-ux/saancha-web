@@ -1,0 +1,112 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+let notice = '';
+const sb = supabaseAdmin();
+
+// Handle actions
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = form.get('action')?.toString();
+
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+
+  if (action === 'add') {
+    const row = {
+      user_id: form.get('user_id')?.toString().trim(),
+      order_no: form.get('order_no')?.toString().trim(),
+      item: form.get('item')?.toString().trim(),
+      material: form.get('material')?.toString().trim(),
+      quantity: parseInt(form.get('quantity')?.toString() || '1'),
+      amount: form.get('amount') ? Number(form.get('amount')) : null,
+      status: form.get('status')?.toString() || 'pending',
+      notes: form.get('notes')?.toString().trim() || null,
+    };
+    const { error } = await sb.from('orders').insert(row);
+    notice = error ? ('Error: ' + error.message) : 'Order added.';
+  }
+
+  if (action === 'status') {
+    const id = form.get('id')?.toString();
+    const status = form.get('status')?.toString();
+    const { error } = await sb.from('orders').update({ status }).eq('id', id);
+    notice = error ? ('Error: ' + error.message) : 'Status updated.';
+  }
+}
+
+// Load customers (for the dropdown) + recent orders
+const { data: users } = await sb.auth.admin.listUsers();
+const customers = (users?.users || []).map(u => ({ id: u.id, email: u.email }));
+const { data: orders } = await sb.from('orders').select('*').order('created_at', { ascending: false }).limit(50);
+const list = orders || [];
+const statuses = ['pending','in-production','shipped','delivered'];
+---
+<Base title="Admin dashboard — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head">
+        <div><span class="kicker">Saancha Admin</span><h1>Orders</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
+      </div>
+
+      {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
+
+      <section class="admin-card">
+        <h2>Add an order</h2>
+        <form method="POST" class="admin-form">
+          <input type="hidden" name="action" value="add">
+          <div class="ag">
+            <label>Customer
+              <select name="user_id" required>
+                <option value="">Select customer</option>
+                {customers.map(c => <option value={c.id}>{c.email}</option>)}
+              </select>
+            </label>
+            <label>Order no <input name="order_no" placeholder="SA-1001"></label>
+          </div>
+          <div class="ag">
+            <label>Item <input name="item" placeholder="Ribbed Pillar candle mold" required></label>
+            <label>Material
+              <select name="material"><option>candles</option><option>soap</option><option>concrete</option><option>resin</option></select>
+            </label>
+          </div>
+          <div class="ag">
+            <label>Quantity <input name="quantity" type="number" value="1" min="1"></label>
+            <label>Amount (₹) <input name="amount" type="number" step="1" placeholder="1200"></label>
+            <label>Status
+              <select name="status">{statuses.map(s => <option>{s}</option>)}</select>
+            </label>
+          </div>
+          <label>Notes <input name="notes" placeholder="optional"></label>
+          <button class="btn" type="submit">Add order</button>
+        </form>
+      </section>
+
+      <section class="admin-card">
+        <h2>Recent orders ({list.length})</h2>
+        <div class="atable">
+          {list.map(o => {
+            const cust = customers.find(c => c.id === o.user_id);
+            return (
+              <div class="arow">
+                <div><b>{o.order_no || o.id.slice(0,8)}</b><span>{cust?.email || o.user_id?.slice(0,8)}</span></div>
+                <div><b>{o.item}</b><span>{o.material} · qty {o.quantity} · {o.amount ? '₹'+o.amount : '—'}</span></div>
+                <form method="POST" class="astatus">
+                  <input type="hidden" name="action" value="status">
+                  <input type="hidden" name="id" value={o.id}>
+                  <select name="status" onchange="this.form.submit()">
+                    {statuses.map(s => <option selected={s===o.status}>{s}</option>)}
+                  </select>
+                </form>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  </main>
+</Base>
