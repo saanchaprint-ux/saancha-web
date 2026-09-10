@@ -3,7 +3,10 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://saancha.in',
-  output: 'static',                 // static by default; SSR pages opt-in via prerender=false
+  output: 'static',
   adapter: vercel(),
+  security: {
+    checkOrigin: false,
+  },
   build: { inlineStylesheets: 'auto' },
 });
