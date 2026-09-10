@@ -3,7 +3,7 @@ export const prerender = false;
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAuth } from '../lib/supabase.js';
 
 let error = '';
 const checkEmail = Astro.url.searchParams.get('check') === '1';
@@ -11,7 +11,7 @@ if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const email = form.get('email')?.toString().trim();
   const password = form.get('password')?.toString() || '';
-  const sb = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+  const sb = supabaseAuth();
   const { data, error: e } = await sb.auth.signInWithPassword({ email, password });
   if (e) error = e.message;
   else if (data.session) {

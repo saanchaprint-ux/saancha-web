@@ -3,7 +3,7 @@ export const prerender = false; // SSR
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAuth } from '../lib/supabase.js';
 
 let error = '';
 if (Astro.request.method === 'POST') {
@@ -14,7 +14,7 @@ if (Astro.request.method === 'POST') {
   if (!email || password.length < 6) {
     error = 'Enter a valid email and a password of at least 6 characters.';
   } else {
-    const sb = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+    const sb = supabaseAuth();
     const { data, error: e } = await sb.auth.signUp({
       email, password, options: { data: { full_name: name } },
     });
