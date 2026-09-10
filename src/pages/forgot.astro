@@ -1,0 +1,41 @@
+---
+export const prerender = false;
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { supabaseAuth } from '../lib/supabase.js';
+import { site } from '../data/site.js';
+
+let msg = '', error = '';
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const email = form.get('email')?.toString().trim();
+  if (!email) error = 'Enter your email.';
+  else {
+    const sb = supabaseAuth();
+    const { error: e } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${site.domain}/reset`,
+    });
+    if (e) error = e.message;
+    else msg = 'If an account exists for that email, a reset link is on its way. Check your inbox.';
+  }
+}
+---
+<Base title="Reset password — Saancha" description="Reset your Saancha password.">
+  <Nav slot="nav" />
+  <main class="auth">
+    <div class="auth-card">
+      <span class="kicker">Password</span>
+      <h1>Forgot password?</h1>
+      <p class="sub">Enter your email and we'll send a reset link.</p>
+      {msg && <p class="ok">{msg}</p>}
+      {error && <p class="err">{error}</p>}
+      <form method="POST">
+        <div class="field"><label class="mono" for="email">Email</label><input id="email" name="email" type="email" required /></div>
+        <button class="btn" type="submit">Send reset link</button>
+      </form>
+      <p class="alt">Remembered it? <a href="/login">Log in</a></p>
+    </div>
+  </main>
+  <Footer slot="footer" />
+</Base>

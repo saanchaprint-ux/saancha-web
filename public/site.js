@@ -133,3 +133,25 @@
     const t=`New enquiry — Saancha\n\nName: ${v('f-name')}\nBrand: ${v('f-brand')||'—'}\nCasting: ${v('f-cast')}\nQuantity: ${v('f-qty')}\nDetails: ${v('f-msg')||'—'}`;
     window.open(`https://wa.me/${wa}?text=${encodeURIComponent(t)}`,'_blank');});}
 })();
+
+/* ── account dropdown: show login/signup vs my-account/orders/logout ── */
+(function(){
+  const loggedIn = document.cookie.split('; ').some(c => c.startsWith('sb-auth=1'));
+  document.querySelectorAll('.acc-in').forEach(el => el.hidden = !loggedIn);
+  document.querySelectorAll('.acc-out').forEach(el => el.hidden = loggedIn);
+  // mobile menu: swap the account entries too (if present)
+  const mAcc = document.querySelector('#menu .m-account');
+  if (mAcc) mAcc.innerHTML = loggedIn
+    ? '<a href="/account">My account</a><a href="/account#orders">My orders</a><a href="/logout">Log out</a>'
+    : '<a href="/login">Log in</a><a href="/signup">Sign up</a>';
+})();
+
+/* ── password show/hide ── */
+document.querySelectorAll('.pass-eye').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const inp=document.getElementById(btn.dataset.eye);
+    if(!inp)return;
+    inp.type = inp.type==='password' ? 'text' : 'password';
+    btn.style.color = inp.type==='text' ? 'var(--amber)' : '';
+  });
+});

@@ -1,0 +1,48 @@
+---
+export const prerender = false;
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+<Base title="Set new password — Saancha" description="Set a new password.">
+  <Nav slot="nav" />
+  <main class="auth">
+    <div class="auth-card">
+      <span class="kicker">Password</span>
+      <h1>Set new password.</h1>
+      <p class="sub">Enter a new password for your account.</p>
+      <p class="err" id="err" hidden></p>
+      <p class="ok" id="ok" hidden></p>
+      <form id="resetForm">
+        <div class="field"><label class="mono" for="password">New password</label>
+          <div class="pass-wrap">
+            <input id="password" name="password" type="password" minlength="6" required />
+            <button type="button" class="pass-eye" data-eye="password" aria-label="Show password">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="btn" type="submit">Update password</button>
+      </form>
+    </div>
+  </main>
+  <Footer slot="footer" />
+
+  <script type="module" is:inline define:vars={{ SUPABASE_URL: import.meta.env.PUBLIC_SUPABASE_URL, SUPABASE_ANON: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+    const err = document.getElementById('err');
+    const ok  = document.getElementById('ok');
+    // Supabase puts the recovery token in the URL hash; the client picks it up.
+    document.getElementById('resetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pass = document.getElementById('password').value;
+      const { error } = await sb.auth.updateUser({ password: pass });
+      if (error) { err.textContent = error.message; err.hidden = false; ok.hidden = true; }
+      else {
+        ok.textContent = 'Password updated. Redirecting to login…'; ok.hidden = false; err.hidden = true;
+        setTimeout(() => location.href = '/login', 1500);
+      }
+    });
+  </script>
+</Base>

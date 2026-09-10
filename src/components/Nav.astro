@@ -16,7 +16,20 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
         </div>
       </div>
       <a href="/#tiers">Options</a>
-      <a href="/account" class="nav-acc">Account</a>
+      <div class="navdrop acc-drop">
+        <button class="acc-btn" aria-label="Account" data-cur="ACCOUNT">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+        </button>
+        <div class="navdrop-menu acc-menu">
+          <!-- logged OUT -->
+          <a href="/login" class="acc-out">Log in</a>
+          <a href="/signup" class="acc-out">Sign up</a>
+          <!-- logged IN (shown via JS) -->
+          <a href="/account" class="acc-in" hidden>My account</a>
+          <a href="/account#orders" class="acc-in" hidden>My orders</a>
+          <a href="/logout" class="acc-in" hidden>Log out</a>
+        </div>
+      </div>
       <a href={wa} class="btn" target="_blank" rel="noopener" data-mag>WhatsApp</a>
       <button class="burger" id="burger" aria-label="Menu"><i></i><i></i></button>
     </div>
@@ -30,7 +43,7 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
       <li><a href="/">Home</a></li>
       {materials.map(m => <li><a href={`/${m.slug}`}>{m.label}</a></li>)}
       <li><a href="/#tiers">Options</a></li>
-      <li><a href="/account">My account</a></li>
+      <li class="m-account"><a href="/login">Log in</a></li>
       <li><a href="/#contact">Contact</a></li>
     </ol>
     <div class="m-foot">

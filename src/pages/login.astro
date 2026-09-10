@@ -17,6 +17,7 @@ if (Astro.request.method === 'POST') {
   else if (data.session) {
     Astro.cookies.set('sb-access-token', data.session.access_token, { path:'/', httpOnly:true, sameSite:'lax', secure:true, maxAge:60*60*24*7 });
     Astro.cookies.set('sb-refresh-token', data.session.refresh_token, { path:'/', httpOnly:true, sameSite:'lax', secure:true, maxAge:60*60*24*30 });
+      Astro.cookies.set('sb-auth', '1', { path:'/', sameSite:'lax', secure:true, maxAge:60*60*24*7 });
     return Astro.redirect('/account');
   }
 }
@@ -32,7 +33,15 @@ if (Astro.request.method === 'POST') {
       {error && <p class="err">{error}</p>}
       <form method="POST">
         <div class="field"><label class="mono" for="email">Email</label><input id="email" name="email" type="email" required /></div>
-        <div class="field"><label class="mono" for="password">Password</label><input id="password" name="password" type="password" required /></div>
+        <div class="field"><label class="mono" for="password">Password</label>
+          <div class="pass-wrap">
+            <input id="password" name="password" type="password" required />
+            <button type="button" class="pass-eye" data-eye="password" aria-label="Show password">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <a href="/forgot" class="forgot-link">Forgot password?</a>
         <button class="btn" type="submit">Log in</button>
       </form>
       <p class="alt">New here? <a href="/signup">Create an account</a></p>

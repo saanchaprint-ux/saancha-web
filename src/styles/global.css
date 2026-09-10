@@ -364,8 +364,22 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .auth-card .sub{color:var(--fg-70);margin-bottom:26px}
 .auth-card .field{margin-bottom:18px}
 .auth-card label{display:block;margin-bottom:7px;color:var(--fg-45)}
-.auth-card input{width:100%;padding:14px 16px;border:1px solid var(--line);background:var(--bg);font-family:'Space Grotesk',sans-serif;font-size:.95rem;color:var(--fg);border-radius:10px;transition:border-color .25s}
+.auth-card input{width:100%;padding:14px 16px;border:1px solid var(--line);background:var(--bg);font-family:'Space Grotesk',sans-serif;font-size:.95rem;color:#F2EFE9;border-radius:10px;transition:border-color .25s;-webkit-text-fill-color:#F2EFE9;caret-color:var(--amber)}
+.auth-card input::placeholder{color:rgba(242,239,233,.35)}
 .auth-card input:focus{outline:none;border-color:var(--amber)}
+/* fix browser autofill dark-on-dark */
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus{
+  -webkit-text-fill-color:#F2EFE9;
+  -webkit-box-shadow:0 0 0 1000px #161618 inset;
+  caret-color:#F2EFE9;
+}
+/* password field with show/hide eye */
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:46px}
+.pass-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--fg-45);cursor:pointer;padding:6px;display:flex;align-items:center;transition:color .2s}
+.pass-eye:hover{color:var(--amber)}
 .auth-card .btn{width:100%;justify-content:center;margin-top:8px}
 .auth-card .alt{margin-top:22px;color:var(--fg-45);font-size:.9rem}
 .auth-card .alt a{color:var(--amber);text-decoration:none}
@@ -391,3 +405,15 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .ocol .meta{color:var(--fg-45);font-size:.82rem}
 .badge{display:inline-block;width:fit-content;padding:4px 12px;border:1px solid;border-radius:100px;font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
 .reorder{color:var(--amber);text-decoration:none;font-size:.85rem;font-weight:600;white-space:nowrap}
+
+/* ── account icon + dropdown ── */
+.acc-drop{position:relative;display:flex;align-items:center}
+.acc-btn{background:none;border:none;color:var(--fg-70);cursor:pointer;padding:6px;display:flex;align-items:center;transition:color .2s}
+.acc-btn:hover{color:var(--amber)}
+.acc-drop .acc-menu{right:0;left:auto;transform:translateX(0) translateY(8px);min-width:170px}
+.acc-drop:hover .acc-menu{transform:translateX(0) translateY(6px)}
+.acc-menu a[hidden]{display:none}
+/* mobile menu account block spacing */
+#menu .m-account{display:flex;flex-direction:column}
+.forgot-link{display:inline-block;margin:-6px 0 10px;color:var(--fg-45);font-size:.85rem;text-decoration:none}
+.forgot-link:hover{color:var(--amber)}
