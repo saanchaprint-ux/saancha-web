@@ -68,8 +68,9 @@ nav.solid{background:rgba(10,10,11,.72);backdrop-filter:blur(20px);border-bottom
 .navdrop-t{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .navdrop .chev{font-size:.6em;transition:transform .25s;color:var(--amber)}
 .navdrop:hover .chev{transform:rotate(180deg)}
-.navdrop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(8px);min-width:180px;background:rgba(17,17,19,.96);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:12px;padding:8px;opacity:0;visibility:hidden;transition:opacity .25s,transform .25s;display:flex;flex-direction:column}
-.navdrop:hover .navdrop-menu{opacity:1;visibility:visible;transform:translateX(-50%) translateY(6px)}
+.navdrop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(6px);min-width:180px;background:rgba(17,17,19,.96);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:12px;padding:8px;opacity:0;visibility:hidden;transition:opacity .25s,transform .25s;display:flex;flex-direction:column}
+.navdrop-menu::before{content:'';position:absolute;bottom:100%;left:0;right:0;height:14px}
+.navdrop:hover .navdrop-menu{opacity:1;visibility:visible;transform:translateX(-50%) translateY(4px)}
 .navdrop-menu a{padding:10px 14px;border-radius:8px;font-size:.9rem;color:var(--fg-70);transition:background .2s,color .2s}
 .navdrop-menu a:hover{background:rgba(230,161,92,.12);color:var(--amber)}
 @media(max-width:980px){.nav-links a:not(.btn){display:none}.navdrop{display:none}}
@@ -269,8 +270,8 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .navdrop-t{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .navdrop .chev{font-size:.6em;transition:transform .25s;color:var(--amber)}
 .navdrop:hover .chev{transform:rotate(180deg)}
-.navdrop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(8px);min-width:190px;background:rgba(17,17,19,.97);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:12px;padding:8px;opacity:0;visibility:hidden;transition:opacity .25s,transform .25s;display:flex;flex-direction:column}
-.navdrop:hover .navdrop-menu{opacity:1;visibility:visible;transform:translateX(-50%) translateY(6px)}
+.navdrop-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(6px);min-width:190px;background:rgba(17,17,19,.97);backdrop-filter:blur(20px);border:1px solid var(--line);border-radius:12px;padding:8px;opacity:0;visibility:hidden;transition:opacity .25s,transform .25s;display:flex;flex-direction:column}
+.navdrop:hover .navdrop-menu{opacity:1;visibility:visible;transform:translateX(-50%) translateY(4px)}
 .navdrop-menu a{padding:10px 14px;border-radius:8px;font-size:.9rem;color:var(--fg-70);transition:background .2s,color .2s;text-decoration:none}
 .navdrop-menu a:hover{background:rgba(230,161,92,.12);color:var(--amber)}
 @media(max-width:980px){.navdrop{display:none}}
@@ -410,8 +411,8 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .acc-drop{position:relative;display:flex;align-items:center}
 .acc-btn{background:none;border:none;color:var(--fg-70);cursor:pointer;padding:6px;display:flex;align-items:center;transition:color .2s}
 .acc-btn:hover{color:var(--amber)}
-.acc-drop .acc-menu{right:0;left:auto;transform:translateX(0) translateY(8px);min-width:170px}
-.acc-drop:hover .acc-menu{transform:translateX(0) translateY(6px)}
+.acc-drop .acc-menu{right:0;left:auto;transform:translateX(0) translateY(6px);min-width:170px}
+.acc-drop:hover .acc-menu{transform:translateX(0) translateY(4px)}
 .acc-menu a[hidden]{display:none}
 /* mobile menu account block spacing */
 #menu .m-account{display:flex;flex-direction:column}
