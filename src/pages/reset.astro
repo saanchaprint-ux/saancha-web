@@ -3,11 +3,13 @@ export const prerender = false;
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import Mascot from '../components/Mascot.astro';
 ---
 <Base title="Set new password — Saancha" description="Set a new password.">
   <Nav slot="nav" />
   <main class="auth">
     <div class="auth-card">
+      <Mascot />
       <span class="kicker">Password</span>
       <h1>Set new password.</h1>
       <p class="sub">Enter a new password for your account.</p>

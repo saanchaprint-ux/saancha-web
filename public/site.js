@@ -155,3 +155,50 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
     btn.style.color = inp.type==='text' ? 'var(--amber)' : '';
   });
 });
+
+/* ── auth mascot: eyes follow email, hands cover on password ── */
+(function(){
+  const mascot = document.getElementById('mascot');
+  if (!mascot) return;
+  const pupils = mascot.querySelectorAll('.m-pupil');
+  const emailInput = document.querySelector('input[type="email"], #email, #name');
+  const passInputs = document.querySelectorAll('input[type="password"]');
+
+  // eyes follow: based on caret position in email (approx) + typing
+  function lookAt(x, y){
+    pupils.forEach(p=>{
+      // small range of movement
+      const dx = Math.max(-4, Math.min(4, x));
+      const dy = Math.max(-3, Math.min(3, y));
+      p.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+  }
+  function resetEyes(){ pupils.forEach(p=>p.style.transform='translate(0,0)'); }
+
+  if (emailInput){
+    emailInput.addEventListener('focus', ()=> mascot.dataset.state='look');
+    emailInput.addEventListener('input', ()=>{
+      // move eyes right as they type, loop back
+      const len = emailInput.value.length;
+      lookAt(((len % 12) - 6) * 0.7, 2);
+    });
+    emailInput.addEventListener('blur', ()=>{ if(mascot.dataset.state!=='cover'){ mascot.dataset.state='idle'; resetEyes(); }});
+  }
+
+  passInputs.forEach(pw=>{
+    pw.addEventListener('focus', ()=>{ mascot.dataset.state='cover'; });
+    pw.addEventListener('blur', ()=>{ mascot.dataset.state='idle'; resetEyes(); });
+    // when show-password eye is toggled to text, mascot peeks
+    const wrap = pw.closest('.pass-wrap');
+    if (wrap){
+      const eye = wrap.querySelector('.pass-eye');
+      if (eye){
+        eye.addEventListener('click', ()=>{
+          if (document.activeElement===pw || pw.value){
+            mascot.dataset.state = (pw.type==='text') ? 'peek' : 'cover';
+          }
+        });
+      }
+    }
+  });
+})();

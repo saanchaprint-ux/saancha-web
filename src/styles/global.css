@@ -439,3 +439,20 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .arow div b{display:block;font-family:'Fraunces',serif;font-weight:500}
 .arow div span{color:var(--fg-45);font-size:.82rem}
 .astatus select{padding:8px 12px;border:1px solid var(--line);background:var(--bg);color:#F2EFE9;border-radius:8px;font-family:'Space Mono',monospace;font-size:.72rem;-webkit-text-fill-color:#F2EFE9}
+
+/* ── auth mascot ── */
+.mascot{display:flex;justify-content:center;margin:-8px 0 18px}
+.mascot svg{overflow:visible}
+.mascot .m-pupil{transition:transform .12s ease-out}
+.mascot .m-lids{transition:opacity .2s}
+.mascot .m-hand{transition:transform .35s cubic-bezier(.34,1.56,.64,1);transform-origin:center}
+/* hands rest low/hidden below the face */
+.mascot .m-hand-l{transform:translate(6px,44px)}
+.mascot .m-hand-r{transform:translate(-6px,44px)}
+/* covering state: hands come up over the eyes, lids close */
+.mascot[data-state="cover"] .m-hand-l{transform:translate(12px,-58px) rotate(-8deg)}
+.mascot[data-state="cover"] .m-hand-r{transform:translate(-12px,-58px) rotate(8deg)}
+.mascot[data-state="cover"] .m-lids{opacity:1}
+.mascot[data-state="cover"] .m-eyes .m-pupil{opacity:0}
+.mascot[data-state="peek"] .m-hand-l{transform:translate(12px,-46px) rotate(-8deg)}
+.mascot[data-state="peek"] .m-hand-r{transform:translate(-12px,-46px) rotate(8deg)}

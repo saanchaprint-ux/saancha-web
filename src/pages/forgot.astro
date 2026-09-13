@@ -3,6 +3,7 @@ export const prerender = false;
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import Mascot from '../components/Mascot.astro';
 import { supabaseAuth } from '../lib/supabase.js';
 import { site } from '../data/site.js';
 
@@ -25,6 +26,7 @@ if (Astro.request.method === 'POST') {
   <Nav slot="nav" />
   <main class="auth">
     <div class="auth-card">
+      <Mascot />
       <span class="kicker">Password</span>
       <h1>Forgot password?</h1>
       <p class="sub">Enter your email and we'll send a reset link.</p>

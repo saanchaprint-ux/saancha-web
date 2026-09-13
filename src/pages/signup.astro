@@ -3,6 +3,7 @@ export const prerender = false; // SSR
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import Mascot from '../components/Mascot.astro';
 import { supabaseAuth } from '../lib/supabase.js';
 
 let error = '';
@@ -35,6 +36,7 @@ if (Astro.request.method === 'POST') {
   <Nav slot="nav" />
   <main class="auth">
     <div class="auth-card">
+      <Mascot />
       <span class="kicker">Create account</span>
       <h1>Join Saancha.</h1>
       <p class="sub">Track your orders and reorder in a click.</p>

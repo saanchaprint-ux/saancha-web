@@ -1,0 +1,51 @@
+---
+// Cute mascot for auth pages.
+// Eyes follow the email field; hands cover eyes on password field.
+// Themed to Saancha (amber + dark).
+---
+<div class="mascot" id="mascot" data-state="idle">
+  <svg viewBox="0 0 200 170" width="150" height="128" aria-hidden="true">
+    <!-- body / head -->
+    <ellipse cx="100" cy="92" rx="62" ry="58" fill="#161618" stroke="rgba(242,239,233,.14)" stroke-width="2"/>
+    <!-- ears -->
+    <circle cx="46" cy="52" r="16" fill="#161618" stroke="rgba(242,239,233,.14)" stroke-width="2"/>
+    <circle cx="154" cy="52" r="16" fill="#161618" stroke="rgba(242,239,233,.14)" stroke-width="2"/>
+    <circle cx="46" cy="52" r="7" fill="#E6A15C"/>
+    <circle cx="154" cy="52" r="7" fill="#E6A15C"/>
+
+    <!-- cheeks -->
+    <circle cx="66" cy="104" r="9" fill="rgba(230,161,92,.18)"/>
+    <circle cx="134" cy="104" r="9" fill="rgba(230,161,92,.18)"/>
+
+    <!-- eyes (whites) -->
+    <g class="m-eyes">
+      <ellipse cx="78" cy="86" rx="15" ry="16" fill="#F2EFE9"/>
+      <ellipse cx="122" cy="86" rx="15" ry="16" fill="#F2EFE9"/>
+      <!-- pupils (these move) -->
+      <circle class="m-pupil" cx="78" cy="86" r="6.5" fill="#0A0A0B"/>
+      <circle class="m-pupil" cx="122" cy="86" r="6.5" fill="#0A0A0B"/>
+    </g>
+
+    <!-- closed-eye lids (shown while covering) -->
+    <g class="m-lids" opacity="0">
+      <path d="M64 88 q14 8 28 0" stroke="#0A0A0B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M108 88 q14 8 28 0" stroke="#0A0A0B" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- nose + smile -->
+    <ellipse cx="100" cy="106" rx="5" ry="4" fill="#E6A15C"/>
+    <path d="M88 116 q12 10 24 0" stroke="rgba(242,239,233,.5)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+    <!-- hands (cover eyes on password) -->
+    <g class="m-hands">
+      <g class="m-hand m-hand-l">
+        <ellipse cx="70" cy="150" rx="20" ry="16" fill="#161618" stroke="rgba(242,239,233,.14)" stroke-width="2"/>
+        <path d="M58 150 q4 -6 10 -6 M66 148 q4 -7 10 -6 M74 149 q4 -6 9 -4" stroke="rgba(242,239,233,.25)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="m-hand m-hand-r">
+        <ellipse cx="130" cy="150" rx="20" ry="16" fill="#161618" stroke="rgba(242,239,233,.14)" stroke-width="2"/>
+        <path d="M122 150 q4 -6 10 -6 M130 148 q4 -7 10 -6 M138 149 q4 -6 9 -4" stroke="rgba(242,239,233,.25)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+  </svg>
+</div>
