@@ -1,0 +1,204 @@
+---
+export const prerender = false;  // SSR: load latest pricing + handle quote POST
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site.js';
+import { supabaseAuth, getUser } from '../lib/supabase.js';
+
+const wa = site.whatsapp;
+
+// load pricing rules
+let rules = null;
+try {
+  const sb = supabaseAuth();
+  const { data } = await sb.from('pricing').select('rules').eq('id',1).single();
+  rules = data?.rules || null;
+} catch(e) { rules = null; }
+
+// logged-in user (prefill)
+const user = await getUser(Astro.cookies);
+
+// handle quote submit
+let sent = false, error = '';
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const row = {
+    user_id: user?.id || null,
+    name: f.get('name')?.toString().trim(),
+    email: f.get('email')?.toString().trim(),
+    phone: f.get('phone')?.toString().trim(),
+    product: f.get('product')?.toString().trim(),
+    size: f.get('size')?.toString().trim(),
+    complexity: f.get('complexity')?.toString().trim(),
+    logo: f.get('logo') === 'on',
+    quantity: f.get('quantity')?.toString().trim(),
+    dimensions: f.get('dimensions')?.toString().trim() || null,
+    details: f.get('details')?.toString().trim() || null,
+    estimate: f.get('estimate')?.toString().trim() || null,
+  };
+  if (!row.name || !row.email) error = 'Name and email are required.';
+  else {
+    try {
+      const sb = supabaseAuth();
+      const { error: e } = await sb.from('quote_requests').insert(row);
+      if (e) error = e.message; else sent = true;
+    } catch(e) { error = 'Could not submit. Try WhatsApp instead.'; }
+  }
+}
+---
+<Base title="Custom Moulds — Saancha" description="Custom casting moulds built around your product. Estimate the cost and request a quote.">
+  <Nav slot="nav" />
+
+  <!-- HERO -->
+  <header class="sec cm-hero">
+    <div class="wrap">
+      <span class="kicker rvu" style="display:block;margin-bottom:18px">Custom Moulds</span>
+      <h1 class="rvu">Your idea. Your design. <span class="serif-it">Your custom mould.</span></h1>
+      <p class="lede rvu">Bring your ideas to life with custom mould solutions designed around your product, size, and creative requirements. No minimum order — one piece or a full run.</p>
+      <div class="hero-cta rvu">
+        <a href="#calculator" class="btn" data-mag data-cur="CALC">Calculate your estimate</a>
+        <a href="#quote" class="btn ghost" data-mag>Request a custom quote</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- PROCESS -->
+  <section class="sec" style="background:var(--bg-2)">
+    <div class="wrap">
+      <span class="kicker rvu" style="display:block;margin-bottom:14px">How it works</span>
+      <h2 class="rvu" style="font-size:clamp(1.9rem,4vw,3rem)">From your idea to the final product.</h2>
+      <div class="steps-row">
+        <div class="s rvu"><div class="n">01</div><h4>Design</h4><p>Concept discussion, design prep, and refinement around your product.</p></div>
+        <div class="s rvu"><div class="n">02</div><h4>Printing</h4><p>Master model prepared or 3D-printed from the approved design.</p></div>
+        <div class="s rvu"><div class="n">03</div><h4>Casting mould</h4><p>The mould is created using the right production method for your material.</p></div>
+        <div class="s rvu"><div class="n">04</div><h4>Final product</h4><p>Finishing, quality review, and your mould (or finished pieces) delivered.</p></div>
+      </div>
+      <p class="pricenote rvu" style="margin-top:20px">Pricing depends on size, design complexity, quantity, material and production specs.</p>
+    </div>
+  </section>
+
+  <!-- CALCULATOR -->
+  <section class="sec" id="calculator">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker rvu">Estimate</span>
+        <h2 class="rvu" style="font-size:clamp(1.9rem,4vw,3rem)">Calculate your custom mould estimate.</h2>
+        <p class="lede rvu">Choose product type, size, design, and quantity for an approximate cost.</p>
+      </div>
+
+      <div class="calc rvu" id="calc" data-rules={rules ? JSON.stringify(rules) : ''}>
+        <!-- Step 1 product -->
+        <div class="calc-step">
+          <label class="calc-label"><span class="n">01</span> Product type</label>
+          <div class="opt-grid" data-group="product">
+            <button type="button" class="opt" data-val="candle">Candle</button>
+            <button type="button" class="opt" data-val="soap">Soap</button>
+            <button type="button" class="opt" data-val="resin">Resin</button>
+            <button type="button" class="opt" data-val="concrete">Concrete</button>
+            <button type="button" class="opt" data-val="edible">Edible Item</button>
+          </div>
+        </div>
+        <!-- Step 2 size -->
+        <div class="calc-step">
+          <label class="calc-label"><span class="n">02</span> Size</label>
+          <div class="opt-grid" data-group="size">
+            <button type="button" class="opt" data-val="2">2&Prime;</button>
+            <button type="button" class="opt" data-val="3">3&Prime;</button>
+            <button type="button" class="opt" data-val="4">4&Prime;</button>
+            <button type="button" class="opt" data-val="5">5&Prime;</button>
+            <button type="button" class="opt" data-val="custom">Custom Size</button>
+          </div>
+          <div class="custom-dims" id="customDims" hidden>
+            <input type="text" id="dims" placeholder="e.g. 6 × 4 × 3 inches">
+          </div>
+        </div>
+        <!-- Step 3 complexity + logo -->
+        <div class="calc-step">
+          <label class="calc-label"><span class="n">03</span> Design</label>
+          <div class="opt-grid" data-group="complexity">
+            <button type="button" class="opt" data-val="simple">Simple</button>
+            <button type="button" class="opt" data-val="detailed">Detailed</button>
+            <button type="button" class="opt" data-val="multipart">Multipart</button>
+          </div>
+          <label class="logo-check"><input type="checkbox" id="logoCheck"> Add logo / branding</label>
+        </div>
+        <!-- Step 4 quantity -->
+        <div class="calc-step">
+          <label class="calc-label"><span class="n">04</span> Quantity</label>
+          <div class="opt-grid" data-group="quantity">
+            <button type="button" class="opt" data-val="1">1</button>
+            <button type="button" class="opt" data-val="5">5</button>
+            <button type="button" class="opt" data-val="10">10+</button>
+            <button type="button" class="opt" data-val="custom">Custom</button>
+          </div>
+          <div class="custom-dims" id="customQty" hidden>
+            <input type="number" id="qtyNum" min="1" placeholder="Enter quantity">
+          </div>
+        </div>
+
+        <button type="button" class="btn calc-go" id="calcGo" data-mag>Calculate estimate</button>
+
+        <!-- Result -->
+        <div class="calc-result" id="calcResult" hidden>
+          <div class="cr-head">Your estimated custom mould cost</div>
+          <div class="cr-summary" id="crSummary"></div>
+          <div class="cr-total" id="crTotal"></div>
+          <p class="cr-note">This is an approximate estimate. Final pricing will be confirmed after reviewing your design and production requirements.</p>
+          <div class="cr-cta">
+            <a href="#quote" class="btn" id="crQuote" data-mag>Request final quote</a>
+            <button type="button" class="btn ghost" id="crReset" data-mag>Modify selection</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE FORM -->
+  <section class="sec" id="quote" style="background:var(--bg-2)">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker rvu">Request a quote</span>
+        <h2 class="rvu" style="font-size:clamp(1.9rem,4vw,3rem)">Tell us your requirements.</h2>
+        <p class="lede rvu">Submit your details — or send the same on WhatsApp. We'll reply with a quotation.</p>
+      </div>
+
+      {sent ? (
+        <div class="ok" style="max-width:600px">Thanks! Your request is in — we'll get back with a quote soon. You can also <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">message us on WhatsApp</a>.</div>
+      ) : (
+        <div class="c-grid">
+          <form class="rvu" method="POST" id="quoteForm">
+            {error && <p class="err">{error}</p>}
+            <div class="two">
+              <div class="field"><label class="mono" for="q-name">Name</label><input id="q-name" name="name" value={user?.user_metadata?.full_name || ''} required></div>
+              <div class="field"><label class="mono" for="q-email">Email</label><input id="q-email" name="email" type="email" value={user?.email || ''} required></div>
+            </div>
+            <div class="two">
+              <div class="field"><label class="mono" for="q-phone">Phone</label><input id="q-phone" name="phone"></div>
+              <div class="field"><label class="mono" for="q-product">Product type</label><input id="q-product" name="product" placeholder="candle / soap / …"></div>
+            </div>
+            <div class="two">
+              <div class="field"><label class="mono" for="q-size">Size</label><input id="q-size" name="size"></div>
+              <div class="field"><label class="mono" for="q-qty">Quantity</label><input id="q-qty" name="quantity"></div>
+            </div>
+            <div class="two">
+              <div class="field"><label class="mono" for="q-complexity">Design complexity</label><input id="q-complexity" name="complexity"></div>
+              <div class="field"><label class="mono" for="q-dims">Dimensions (if custom)</label><input id="q-dims" name="dimensions"></div>
+            </div>
+            <label class="logo-check" style="margin-bottom:16px"><input type="checkbox" name="logo" id="q-logo"> Needs logo / branding</label>
+            <div class="field"><label class="mono" for="q-details">Additional requirements</label><textarea id="q-details" name="details" placeholder="Anything else…"></textarea></div>
+            <input type="hidden" name="estimate" id="q-estimate">
+            <button type="submit" class="btn" data-mag>Submit request</button>
+          </form>
+          <div class="info rvu">
+            <div><span class="mono">Prefer WhatsApp?</span><a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20a%20custom%20mould%20quote`} target="_blank" rel="noopener">Send on WhatsApp</a></div>
+            <div><span class="mono">Email</span><a href={`mailto:${site.email}`}>{site.email}</a></div>
+            <div><span class="mono">Response</span><p>Usually the same day</p></div>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <Footer slot="footer" />
+</Base>

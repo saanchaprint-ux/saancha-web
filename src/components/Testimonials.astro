@@ -1,0 +1,46 @@
+---
+// Testimonials — published rows from Supabase. No fake data.
+import { supabaseAuth } from '../lib/supabase.js';
+let items = [];
+try {
+  const sb = supabaseAuth();
+  const { data } = await sb.from('testimonials').select('*')
+    .eq('published', true).order('sort', { ascending: true }).limit(12);
+  items = data || [];
+} catch (e) { items = []; }
+
+const stars = (n) => '★★★★★'.slice(0, Math.max(0, Math.min(5, n||5)));
+---
+<section class="sec testi" id="testimonials">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker rvu">Testimonials</span>
+      <h2 class="rvu"><span class="ln"><span>What our</span></span><span class="ln"><span>customers <span class="serif-it">say.</span></span></span></h2>
+    </div>
+
+    {items.length === 0 ? (
+      <div class="testi-empty rvu">
+        <p>Customer stories coming soon.</p>
+        <p class="sub">We're collecting feedback from the 250+ makers we've built moulds for.</p>
+        <a href="/custom-moulds" class="btn ghost" data-mag>Create your custom mould</a>
+      </div>
+    ) : (
+      <div class="testi-grid">
+        {items.map(t => (
+          <figure class="testi-card rvu">
+            <div class="stars">{stars(t.rating)}</div>
+            <blockquote>{t.body}</blockquote>
+            <figcaption>
+              {t.image_url && <img src={t.image_url} alt={t.name} loading="lazy" />}
+              <div><b>{t.name}</b>{t.role && <span>{t.role}</span>}</div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )}
+
+    {items.length > 0 && (
+      <div class="testi-cta rvu"><a href="/custom-moulds" class="btn" data-mag>Create your custom mould</a></div>
+    )}
+  </div>
+</section>

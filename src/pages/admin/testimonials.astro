@@ -1,0 +1,96 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+let notice = '';
+const sb = supabaseAdmin();
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = form.get('action')?.toString();
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+
+  if (action === 'add') {
+    const row = {
+      name: form.get('name')?.toString().trim(),
+      role: form.get('role')?.toString().trim() || null,
+      rating: parseInt(form.get('rating')?.toString() || '5'),
+      body: form.get('body')?.toString().trim(),
+      image_url: form.get('image_url')?.toString().trim() || null,
+      published: form.get('published') === 'on',
+      sort: parseInt(form.get('sort')?.toString() || '0'),
+    };
+    const { error } = await sb.from('testimonials').insert(row);
+    notice = error ? ('Error: ' + error.message) : 'Testimonial added.';
+  }
+  if (action === 'toggle') {
+    const id = form.get('id')?.toString();
+    const pub = form.get('published') === 'true';
+    const { error } = await sb.from('testimonials').update({ published: !pub }).eq('id', id);
+    notice = error ? ('Error: ' + error.message) : 'Updated.';
+  }
+  if (action === 'delete') {
+    const id = form.get('id')?.toString();
+    const { error } = await sb.from('testimonials').delete().eq('id', id);
+    notice = error ? ('Error: ' + error.message) : 'Deleted.';
+  }
+}
+
+const { data } = await sb.from('testimonials').select('*').order('sort', { ascending: true });
+const list = data || [];
+---
+<Base title="Admin — Testimonials — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head">
+        <div><span class="kicker">Saancha Admin</span><h1>Testimonials</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
+      </div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials" class="on">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a>
+      </nav>
+
+      {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
+
+      <section class="admin-card">
+        <h2>Add a testimonial</h2>
+        <form method="POST" class="admin-form">
+          <input type="hidden" name="action" value="add">
+          <div class="ag">
+            <label>Name <input name="name" required></label>
+            <label>Role / place <input name="role" placeholder="Candle brand, Delhi"></label>
+            <label>Rating
+              <select name="rating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
+            </label>
+          </div>
+          <label>Feedback <input name="body" required placeholder="Their words…"></label>
+          <div class="ag">
+            <label>Photo URL (optional) <input name="image_url" placeholder="https://…"></label>
+            <label>Sort order <input name="sort" type="number" value="0"></label>
+            <label style="flex-direction:row;align-items:center;gap:8px;margin-top:22px"><input type="checkbox" name="published" style="width:auto"> Publish now</label>
+          </div>
+          <button class="btn" type="submit">Add testimonial</button>
+        </form>
+      </section>
+
+      <section class="admin-card">
+        <h2>All testimonials ({list.length})</h2>
+        <div class="atable">
+          {list.map(t => (
+            <div class="arow">
+              <div><b>{t.name}</b><span>{t.role || '—'} · {'★'.repeat(t.rating)}</span></div>
+              <div><span>{t.body}</span></div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span class="badge" style={`color:${t.published?'#5FD189':'#E6A15C'};border-color:${t.published?'#5FD189':'#E6A15C'}`}>{t.published?'live':'draft'}</span>
+                <form method="POST"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value={t.id}><input type="hidden" name="published" value={String(t.published)}><button class="mini-btn">{t.published?'Unpublish':'Publish'}</button></form>
+                <form method="POST" onsubmit="return confirm('Delete this testimonial?')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value={t.id}><button class="mini-btn danger">Delete</button></form>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  </main>
+</Base>

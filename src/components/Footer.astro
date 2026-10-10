@@ -9,8 +9,9 @@ import { site, materials } from '../data/site.js';
         <p>Casting molds designed and manufactured in {site.city}. {site.tagline}.</p>
       </div>
       <div class="f-col">
-        <h4>Materials</h4>
+        <h4>Moulds</h4>
         {materials.map(m => <a href={`/${m.slug}`}>{m.label}</a>)}
+        <a href="/custom-moulds">Custom Moulds</a>
       </div>
       <div class="f-col">
         <h4>Contact</h4>

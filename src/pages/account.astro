@@ -11,6 +11,9 @@ if (!user) return Astro.redirect('/login');
 const sb = supabaseServer(Astro.cookies);
 const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
 const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+const { data: quotes } = await sb.from('quote_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+const qlist = quotes || [];
+const qStatusColor = { 'submitted':'#E6A15C','under-review':'#E6A15C','quote-ready':'#5FD189','approved':'#5FD189','in-production':'#8FA98C','completed':'#5FD189' };
 
 const name = profile?.full_name || user.email;
 const list = orders || [];
@@ -48,6 +51,29 @@ const statusColor = { pending:'#E6A15C','in-production':'#8FA98C', shipped:'#5FD
                 <div class="ocol"><span class="mono">Amount</span><b>{o.amount ? '₹'+o.amount : '—'}</b></div>
                 <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${statusColor[o.status]||'#E6A15C'};border-color:${statusColor[o.status]||'#E6A15C'}`}>{o.status}</span></div>
                 <div class="ocol"><a class="reorder" href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi, I want to reorder: '+o.item)}`} target="_blank" rel="noopener">Reorder →</a></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div class="acc-orders" id="requests" style="margin-top:50px">
+        <div class="acc-bar"><h2>Custom mould requests</h2><a href="/custom-moulds" class="btn ghost">New custom request</a></div>
+        {qlist.length === 0 ? (
+          <div class="empty">
+            <p>No custom requests yet.</p>
+            <p class="sub">Use the calculator on the Custom Moulds page to get an estimate and request a quote.</p>
+            <a href="/custom-moulds" class="btn ghost">Custom Moulds</a>
+          </div>
+        ) : (
+          <div class="otable">
+            {qlist.map(q => (
+              <div class="orow">
+                <div class="ocol"><span class="mono">Request</span><b>{q.id.slice(0,8)}</b></div>
+                <div class="ocol"><span class="mono">Specs</span><b>{q.product || '—'}</b><span class="meta">{[q.size,q.complexity,(q.logo?'logo':''),q.quantity].filter(Boolean).join(' · ')}</span></div>
+                <div class="ocol"><span class="mono">Estimate</span><b>{q.estimate || '—'}</b></div>
+                <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${qStatusColor[q.status]||'#E6A15C'};border-color:${qStatusColor[q.status]||'#E6A15C'}`}>{q.status}</span></div>
+                <div class="ocol"><span class="mono">Date</span><span class="meta">{new Date(q.created_at).toLocaleDateString('en-IN')}</span></div>
               </div>
             ))}
           </div>

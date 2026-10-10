@@ -202,3 +202,109 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
     }
   });
 })();
+
+/* ── Custom Mould Pricing Calculator ── */
+(function(){
+  const calc = document.getElementById('calc');
+  if (!calc) return;
+  let rules = null;
+  try { rules = JSON.parse(calc.dataset.rules || 'null'); } catch(e){ rules = null; }
+
+  const sel = { product:null, size:null, complexity:null, quantity:null, logo:false };
+
+  // option buttons
+  calc.querySelectorAll('.opt-grid').forEach(grid=>{
+    const group = grid.dataset.group;
+    grid.querySelectorAll('.opt').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        grid.querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));
+        btn.classList.add('on');
+        sel[group] = btn.dataset.val;
+        if (group==='size') document.getElementById('customDims').hidden = (btn.dataset.val!=='custom');
+        if (group==='quantity') document.getElementById('customQty').hidden = (btn.dataset.val!=='custom');
+      });
+    });
+  });
+  const logoCheck = document.getElementById('logoCheck');
+  if (logoCheck) logoCheck.addEventListener('change', ()=> sel.logo = logoCheck.checked);
+
+  const fmt = (n)=> (rules?.currency||'₹') + Math.round(n).toLocaleString('en-IN');
+
+  document.getElementById('calcGo').addEventListener('click', ()=>{
+    const res = document.getElementById('calcResult');
+    const sum = document.getElementById('crSummary');
+    const tot = document.getElementById('crTotal');
+
+    // validation
+    if (!sel.product || !sel.size || !sel.complexity || !sel.quantity){
+      res.hidden = false;
+      sum.innerHTML = '<p class="cr-warn">Please select product, size, design and quantity.</p>';
+      tot.textContent = '';
+      res.scrollIntoView({behavior:'smooth', block:'nearest'});
+      return;
+    }
+
+    // custom quantity value
+    let qty = sel.quantity;
+    if (qty==='custom'){ qty = parseInt(document.getElementById('qtyNum').value||'0'); }
+    else if (qty==='10'){ qty = parseInt(document.getElementById('qtyNum')?.value||'10') || 10; }
+    qty = Math.max(1, parseInt(qty)||1);
+
+    const dims = document.getElementById('dims')?.value || '';
+
+    // CUSTOM QUOTE cases: multipart design OR custom size → no auto price
+    const needsQuote = (sel.complexity==='multipart') || (sel.size==='custom') || !rules;
+    const rowsHtml = `
+      <div class="cr-row"><span>Product</span><b>${sel.product}</b></div>
+      <div class="cr-row"><span>Size</span><b>${sel.size==='custom' ? (dims||'custom') : sel.size+'″'}</b></div>
+      <div class="cr-row"><span>Design</span><b>${sel.complexity}${sel.logo?' + logo':''}</b></div>
+      <div class="cr-row"><span>Quantity</span><b>${qty}</b></div>`;
+
+    if (needsQuote){
+      sum.innerHTML = rowsHtml;
+      tot.innerHTML = '<span class="cr-quote">Custom Quote Required</span><p class="cr-note" style="margin-top:8px">Multipart / custom-size moulds are priced after a quick design review.</p>';
+      prefill(qty, dims, 'Custom quote required');
+      res.hidden = false; res.scrollIntoView({behavior:'smooth', block:'nearest'});
+      return;
+    }
+
+    // price math
+    const base = rules.base[sel.product] || 0;
+    const sizeMult = rules.sizeMult[sel.size] || 1;
+    const cxMult = rules.complexityMult[sel.complexity] || 1;
+    const logo = sel.logo ? (rules.logoCharge||0) : 0;
+    let per = base*sizeMult*cxMult + logo;
+    // quantity tier discount
+    let tier = (rules.qtyTiers||[]).slice().reverse().find(t=> qty>=t.min) || {mult:1};
+    const total = per * qty * (tier.mult||1);
+
+    sum.innerHTML = rowsHtml +
+      `<div class="cr-row"><span>Base (per unit)</span><b>${fmt(per)}</b></div>` +
+      (tier.mult<1 ? `<div class="cr-row"><span>Bulk discount</span><b>−${Math.round((1-tier.mult)*100)}%</b></div>` : '');
+    tot.innerHTML = `<span class="cr-total-label">Estimated total</span><span class="cr-total-val">${fmt(total)}</span>`;
+    prefill(qty, dims, fmt(total)+' (est.)');
+    res.hidden = false; res.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  function prefill(qty, dims, estimate){
+    const set=(id,v)=>{ const el=document.getElementById(id); if(el&&!el.value) el.value=v; };
+    const setForce=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
+    setForce('q-product', sel.product||'');
+    setForce('q-size', sel.size==='custom'?(dims||'custom'):(sel.size?sel.size+'"':''));
+    setForce('q-complexity', (sel.complexity||'')+(sel.logo?' + logo':''));
+    setForce('q-qty', qty);
+    setForce('q-dims', dims);
+    setForce('q-estimate', estimate);
+    const ql=document.getElementById('q-logo'); if(ql) ql.checked = sel.logo;
+  }
+
+  document.getElementById('crReset').addEventListener('click', ()=>{
+    document.getElementById('calcResult').hidden = true;
+    calc.querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));
+    document.getElementById('customDims').hidden = true;
+    document.getElementById('customQty').hidden = true;
+    if(logoCheck) logoCheck.checked=false;
+    Object.keys(sel).forEach(k=> sel[k]= k==='logo'?false:null);
+    document.getElementById('calculator').scrollIntoView({behavior:'smooth'});
+  });
+})();

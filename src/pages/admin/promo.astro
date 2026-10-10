@@ -1,0 +1,57 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+let notice = '';
+const sb = supabaseAdmin();
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = form.get('action')?.toString();
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+  if (action === 'save') {
+    const rows = [
+      { key:'promo_enabled', value: form.get('promo_enabled')==='on' ? 'true' : 'false' },
+      { key:'promo_text', value: form.get('promo_text')?.toString().trim() },
+      { key:'promo_cta', value: form.get('promo_cta')?.toString().trim() },
+      { key:'promo_url', value: form.get('promo_url')?.toString().trim() },
+    ];
+    const { error } = await sb.from('settings').upsert(rows);
+    notice = error ? ('Error: ' + error.message) : 'Promo saved. (Live site may take a moment / redeploy to refresh.)';
+  }
+}
+
+const { data } = await sb.from('settings').select('key,value')
+  .in('key', ['promo_enabled','promo_text','promo_cta','promo_url']);
+const m = Object.fromEntries((data||[]).map(r => [r.key, r.value]));
+---
+<Base title="Admin — Promo — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head">
+        <div><span class="kicker">Saancha Admin</span><h1>Promo ticker</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
+      </div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo" class="on">Promo</a><a href="/admin/pricing">Pricing</a>
+      </nav>
+
+      {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
+
+      <section class="admin-card">
+        <h2>Edit promo ticker</h2>
+        <form method="POST" class="admin-form">
+          <input type="hidden" name="action" value="save">
+          <label style="flex-direction:row;align-items:center;gap:10px"><input type="checkbox" name="promo_enabled" style="width:auto" checked={m.promo_enabled==='true'}> Show the ticker</label>
+          <label>Promo text <input name="promo_text" value={m.promo_text||'Custom Moulds Starting at ₹999'}></label>
+          <label>CTA text <input name="promo_cta" value={m.promo_cta||'Explore Custom Moulds'}></label>
+          <label>Link URL <input name="promo_url" value={m.promo_url||'/custom-moulds'}></label>
+          <button class="btn" type="submit">Save</button>
+        </form>
+        <p class="pricenote">Starting price (₹999) sirf advertised starting price hai — har design ke liye guaranteed quote nahi. Text yahan se kabhi bhi badal sakte ho.</p>
+      </section>
+    </div>
+  </main>
+</Base>

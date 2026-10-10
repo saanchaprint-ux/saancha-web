@@ -1,0 +1,50 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+let notice = '';
+const sb = supabaseAdmin();
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const action = f.get('action')?.toString();
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+  if (action === 'save') {
+    const raw = f.get('rules')?.toString() || '';
+    try {
+      const parsed = JSON.parse(raw);               // validate JSON
+      const { error } = await sb.from('pricing').upsert({ id:1, rules: parsed, updated_at: new Date().toISOString() });
+      notice = error ? ('Error: '+error.message) : 'Pricing saved. Redeploy to reflect on calculator.';
+    } catch(e) { notice = 'Error: invalid JSON — check commas/brackets.'; }
+  }
+}
+
+const { data } = await sb.from('pricing').select('rules').eq('id',1).single();
+const pretty = data?.rules ? JSON.stringify(data.rules, null, 2) : '';
+---
+<Base title="Admin — Pricing — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head">
+        <div><span class="kicker">Saancha Admin</span><h1>Pricing rules</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
+      </div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing" class="on">Pricing</a>
+      </nav>
+      {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
+
+      <section class="admin-card">
+        <h2>Calculator pricing (JSON)</h2>
+        <p class="pricenote" style="margin-top:0;margin-bottom:16px">base = per-product base price · sizeMult = size multiplier · complexityMult = design multiplier · logoCharge = flat add · qtyTiers = bulk discounts (mult &lt; 1 = discount). Numbers badlo, structure mat todo.</p>
+        <form method="POST" class="admin-form">
+          <input type="hidden" name="action" value="save">
+          <textarea name="rules" class="json-box" spellcheck="false">{pretty}</textarea>
+          <button class="btn" type="submit">Save pricing</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</Base>

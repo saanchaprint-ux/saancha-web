@@ -1,0 +1,27 @@
+---
+// Promo ticker — admin-editable via Supabase settings table.
+import { supabaseAuth } from '../lib/supabase.js';
+
+let enabled = true, text = 'Custom Moulds Starting at ₹999', cta = 'Explore Custom Moulds', url = '/custom-moulds';
+try {
+  const sb = supabaseAuth();
+  const { data } = await sb.from('settings').select('key,value')
+    .in('key', ['promo_enabled','promo_text','promo_cta','promo_url']);
+  if (data) {
+    const m = Object.fromEntries(data.map(r => [r.key, r.value]));
+    if (m.promo_enabled !== undefined) enabled = m.promo_enabled === 'true';
+    if (m.promo_text) text = m.promo_text;
+    if (m.promo_cta) cta = m.promo_cta;
+    if (m.promo_url) url = m.promo_url;
+  }
+} catch (e) { /* settings table missing or DB down — show default */ }
+---
+{enabled && (
+  <a class="promo" href={url} aria-label={text}>
+    <div class="promo-track" id="promoTrack">
+      {Array.from({length: 8}).map(() => (
+        <span class="promo-item">{text} <b>{cta} &rarr;</b></span>
+      ))}
+    </div>
+  </a>
+)}

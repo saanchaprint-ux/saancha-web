@@ -10,9 +10,12 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
     <div class="nav-links">
       <a href="/#process">Process</a>
       <div class="navdrop">
-        <a href="/#materials" class="navdrop-t">Materials <span class="chev">&#9662;</span></a>
+        <a href="/#materials" class="navdrop-t">Moulds <span class="chev">&#9662;</span></a>
         <div class="navdrop-menu">
-          {materials.map(m => <a href={`/${m.slug}`}>{m.label}</a>)}
+          <a href="/#materials" class="drop-head">Shop Moulds</a>
+          {materials.map(m => <a href={`/${m.slug}`} class="drop-sub">{m.label}</a>)}
+          <span class="drop-divider"></span>
+          <a href="/custom-moulds" class="drop-head">Custom Moulds</a>
         </div>
       </div>
       <a href="/#tiers">Options</a>
@@ -27,6 +30,7 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
           <!-- logged IN (shown via JS) -->
           <a href="/account" class="acc-in" hidden>My account</a>
           <a href="/account#orders" class="acc-in" hidden>My orders</a>
+          <a href="/account#requests" class="acc-in" hidden>My requests</a>
           <a href="/logout" class="acc-in" hidden>Log out</a>
         </div>
       </div>
@@ -42,6 +46,7 @@ const wa = `https://wa.me/${site.whatsapp}?text=Hi%2C%20I%20need%20a%20mold`;
     <ol>
       <li><a href="/">Home</a></li>
       {materials.map(m => <li><a href={`/${m.slug}`}>{m.label}</a></li>)}
+      <li><a href="/custom-moulds">Custom Moulds</a></li>
       <li><a href="/#tiers">Options</a></li>
       <li class="m-account"><a href="/login">Log in</a></li>
       <li><a href="/#contact">Contact</a></li>

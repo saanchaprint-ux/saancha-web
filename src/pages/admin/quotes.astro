@@ -1,0 +1,64 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+let notice = '';
+const sb = supabaseAdmin();
+const statuses = ['submitted','under-review','quote-ready','approved','in-production','completed'];
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const action = f.get('action')?.toString();
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+  if (action === 'status') {
+    const { error } = await sb.from('quote_requests').update({ status: f.get('status')?.toString() }).eq('id', f.get('id')?.toString());
+    notice = error ? ('Error: '+error.message) : 'Status updated.';
+  }
+}
+
+const { data } = await sb.from('quote_requests').select('*').order('created_at', { ascending:false }).limit(100);
+const list = data || [];
+---
+<Base title="Admin — Quote requests — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head">
+        <div><span class="kicker">Saancha Admin</span><h1>Custom quote requests</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
+      </div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes" class="on">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a>
+      </nav>
+      {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
+
+      <section class="admin-card">
+        <h2>Requests ({list.length})</h2>
+        <div class="atable">
+          {list.map(q => (
+            <div class="qrow">
+              <div>
+                <b>{q.name} <span style="color:var(--fg-45);font-weight:400">· {q.email}</span></b>
+                <span>{q.phone || '—'}</span>
+                <span>{[q.product,q.size,q.complexity,(q.logo?'logo':''),q.quantity].filter(Boolean).join(' · ')}</span>
+                {q.dimensions && <span>dims: {q.dimensions}</span>}
+                {q.details && <span>“{q.details}”</span>}
+                {q.estimate && <span>est: {q.estimate}</span>}
+                <span style="color:var(--fg-45)">{new Date(q.created_at).toLocaleString('en-IN')}</span>
+              </div>
+              <form method="POST" class="astatus">
+                <input type="hidden" name="action" value="status">
+                <input type="hidden" name="id" value={q.id}>
+                <select name="status" onchange="this.form.submit()">
+                  {statuses.map(s => <option selected={s===q.status}>{s}</option>)}
+                </select>
+              </form>
+            </div>
+          ))}
+          {list.length===0 && <p style="color:var(--fg-45);padding:20px">No requests yet.</p>}
+        </div>
+      </section>
+    </div>
+  </main>
+</Base>
