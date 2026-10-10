@@ -548,3 +548,11 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .qrow > div:first-child{display:flex;flex-direction:column;gap:3px}
 .qrow b{font-family:'Space Grotesk',sans-serif;font-weight:600}
 .qrow span{color:var(--fg-70);font-size:.84rem}
+
+/* ── admin content images ── */
+.img-row{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.img-row > div:first-child{display:flex;flex-direction:column;gap:8px}
+.img-preview{max-width:160px;border-radius:8px;border:1px solid var(--line)}
+.img-none{color:var(--fg-45);font-size:.85rem}
+.img-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.img-form input[type=file]{color:var(--fg-70);font-size:.82rem}

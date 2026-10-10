@@ -5,7 +5,9 @@ import Footer from '../components/Footer.astro';
 import PromoTicker from '../components/PromoTicker.astro';
 import Testimonials from '../components/Testimonials.astro';
 import { site, asset, video } from '../data/site.js';
+import { loadContent, c } from '../lib/content.js';
 
+const content = await loadContent();
 const wa = site.whatsapp;
 // hero + band videos (Seedance)
 const heroVid = video("mold-rotate.mp4", "hf_20260824_035050_fc4dfd89-cdb1-4a4e-b5ef-4bfa6d5378b7.mp4");
@@ -29,7 +31,6 @@ const jsonld = {
 ---
 <Base jsonld={jsonld}>
   <Nav slot="nav" />
-  <PromoTicker />
 
   <section class="hero" id="top">
     <div class="hero-vid">
@@ -39,21 +40,21 @@ const jsonld = {
     </div>
     <span class="scrollcue mono">Scroll &darr;</span>
     <div class="wrap hero-inner">
-      <span class="kicker rvu">{site.name} &middot; Casting Molds &middot; Delhi</span>
+      <span class="kicker rvu">{c(content,"home_kicker", site.name+" · Casting Molds · Delhi")}</span>
       <h1>
-        <span class="ln"><span>Turning concepts</span></span>
-        <span class="ln"><span>into <span class="serif-it">reality.</span></span></span>
+        <span class="ln"><span>{c(content,"home_hero_title_1","Turning concepts")}</span></span>
+        <span class="ln"><span set:html={c(content,"home_hero_title_2",'into <span class="serif-it">reality.</span>')}></span></span>
       </h1>
       <div class="hero-foot">
         <div>
-          <p class="lede rvu">We design and manufacture casting molds — candles, soap, resin, concrete. Order one, not five hundred. Made in Delhi, around your product, in a week.</p>
+          <p class="lede rvu">{c(content,"home_hero_lede","We design and manufacture casting molds — candles, soap, resin, concrete. Order one, not five hundred. Made in Delhi, around your product, in a week.")}</p>
           <div class="hero-cta rvu">
             <a href={`https://wa.me/${wa}?text=Hi%2C%20I%20need%20a%20mold`} class="btn" target="_blank" rel="noopener" data-mag data-cur="CHAT">Start on WhatsApp</a>
             <a href="/#process" class="btn ghost" data-mag>See the process</a>
           </div>
         </div>
         <div class="hero-stats rvu">
-          <div><b data-count="250" data-suffix="+">0</b><span class="mono">Customers</span></div>
+          <div><b data-count={c(content,"home_stat_customers","250")} data-suffix="+">0</b><span class="mono">Customers</span></div>
           <div><b>No</b><span class="mono">Minimum order</span></div>
           <div><b>5–7</b><span class="mono">Days</span></div>
         </div>
@@ -61,12 +62,14 @@ const jsonld = {
     </div>
   </section>
 
+  <PromoTicker />
+
   <div class="marq"><div class="marq-t" id="marq"></div></div>
 
   <section class="sec statement" id="intro">
     <div class="wrap">
       <span class="kicker rvu" style="display:block;margin-bottom:30px">01 — What we do</span>
-      <p class="big" id="stText">Anyone can print plastic. We design the negative space — the exact hollow your product is born from — and cut it so precisely that every single casting comes out identical.</p>
+      <p class="big" id="stText">{c(content,"home_statement","Anyone can print plastic. We design the negative space — the exact hollow your product is born from — and cut it so precisely that every single casting comes out identical.")}</p>
     </div>
   </section>
 
@@ -89,7 +92,7 @@ const jsonld = {
       <div class="sec-head">
         <span class="kicker rvu">03 — Materials</span>
         <h2 class="rvu"><span class="ln"><span>One process.</span></span><span class="ln"><span><span class="serif-it">Anything</span> castable.</span></span></h2>
-        <p class="lede rvu">Tell us what you're pouring — we pick the material. Each range has its own ready-made molds, or we build custom around your product.</p>
+        <p class="lede rvu">{c(content,"home_materials_lede","Tell us what you're pouring — we pick the material. Each range has its own ready-made molds, or we build custom around your product.")}</p>
       </div>
       <div class="mats">
         {mats.map(m => (

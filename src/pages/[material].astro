@@ -4,6 +4,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../data/site.js';
 import { materialsContent } from '../data/materials-content.js';
+import { loadContent, c as cc } from '../lib/content.js';
 
 export function getStaticPaths() {
   return Object.keys(materialsContent).map(slug => ({ params: { material: slug } }));
@@ -11,6 +12,9 @@ export function getStaticPaths() {
 
 const { material } = Astro.params;
 const c = materialsContent[material];
+const content = await loadContent();
+const heroText = cc(content, `${material}_hero`, c.hero);
+const ledeText = cc(content, `${material}_lede`, c.lede);
 const wa = site.whatsapp;
 const slug = material;
 
@@ -42,8 +46,8 @@ const customSlug = c.label.toLowerCase().replace(/ & /g,'-').replace(/ /g,'-');
     </div>
     <div class="wrap">
       <div class="crumb mono"><a href="/">Home</a> / <span>{c.label}</span></div>
-      <h1>{c.hero}</h1>
-      <p class="lede">{c.lede}</p>
+      <h1>{heroText}</h1>
+      <p class="lede">{ledeText}</p>
       <div class="facts">
         {c.facts.map(([b,s]) => <div><b>{b}</b><span class="mono">{s}</span></div>)}
       </div>

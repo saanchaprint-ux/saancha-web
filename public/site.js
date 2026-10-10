@@ -268,19 +268,25 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
       return;
     }
 
-    // price math
+    // ── price math ──
+    // Design/print = ONE-TIME (master banta hai ek baar). Logo yahan.
+    // Per-mould = base × size. Quantity sirf mould cost pe. Bulk discount mould pe.
+    const designBase = (rules.designBase && rules.designBase[sel.complexity]) || 0;
+    const logo = sel.logo ? (rules.logoCharge||0) : 0;
+    const designCharge = designBase + logo;          // one-time
+
     const base = rules.base[sel.product] || 0;
     const sizeMult = rules.sizeMult[sel.size] || 1;
-    const cxMult = rules.complexityMult[sel.complexity] || 1;
-    const logo = sel.logo ? (rules.logoCharge||0) : 0;
-    let per = base*sizeMult*cxMult + logo;
-    // quantity tier discount
-    let tier = (rules.qtyTiers||[]).slice().reverse().find(t=> qty>=t.min) || {mult:1};
-    const total = per * qty * (tier.mult||1);
+    const perMould = base * sizeMult;                 // per unit
+
+    const tier = (rules.qtyTiers||[]).slice().reverse().find(t=> qty>=t.min) || {mult:1};
+    const mouldTotal = perMould * qty * (tier.mult||1);
+    const total = designCharge + mouldTotal;
 
     sum.innerHTML = rowsHtml +
-      `<div class="cr-row"><span>Base (per unit)</span><b>${fmt(per)}</b></div>` +
-      (tier.mult<1 ? `<div class="cr-row"><span>Bulk discount</span><b>−${Math.round((1-tier.mult)*100)}%</b></div>` : '');
+      `<div class="cr-row"><span>Design &amp; setup (one-time)</span><b>${fmt(designCharge)}</b></div>` +
+      `<div class="cr-row"><span>Per mould (${sel.size}&Prime;)</span><b>${fmt(perMould)}</b></div>` +
+      `<div class="cr-row"><span>Moulds × ${qty}${tier.mult<1 ? ' · −'+Math.round((1-tier.mult)*100)+'%' : ''}</span><b>${fmt(mouldTotal)}</b></div>`;
     tot.innerHTML = `<span class="cr-total-label">Estimated total</span><span class="cr-total-val">${fmt(total)}</span>`;
     prefill(qty, dims, fmt(total)+' (est.)');
     res.hidden = false; res.scrollIntoView({behavior:'smooth', block:'nearest'});

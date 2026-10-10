@@ -1,0 +1,122 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+let notice = '';
+const sb = supabaseAdmin();
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const action = f.get('action')?.toString();
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+
+  if (action === 'save') {
+    // text fields: save all keys that start with "k_"
+    const rows = [];
+    for (const [k,v] of f.entries()) {
+      if (k.startsWith('k_')) rows.push({ key: k.slice(2), value: v.toString(), updated_at: new Date().toISOString() });
+    }
+    if (rows.length) {
+      const { error } = await sb.from('content').upsert(rows);
+      notice = error ? ('Error: '+error.message) : 'Content saved. Redeploy to reflect on live site.';
+    }
+  }
+
+  if (action === 'upload') {
+    const file = f.get('file');
+    const key = f.get('key')?.toString();
+    if (file && file.size > 0 && key) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${key}-${Date.now()}.${ext}`;
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const { error: upErr } = await sb.storage.from('site-images').upload(path, buf, { contentType: file.type, upsert: true });
+      if (upErr) notice = 'Error: ' + upErr.message;
+      else {
+        const { data: pub } = sb.storage.from('site-images').getPublicUrl(path);
+        const { error } = await sb.from('content').upsert({ key, value: pub.publicUrl, updated_at: new Date().toISOString() });
+        notice = error ? ('Error: '+error.message) : 'Image uploaded & saved.';
+      }
+    } else notice = 'Error: choose a file first.';
+  }
+}
+
+// load current
+const { data } = await sb.from('content').select('key,value');
+const m = Object.fromEntries((data||[]).map(r => [r.key, r.value]));
+const val = (k)=> m[k] ?? '';
+
+// field groups
+const groups = [
+  { title:'Homepage — Hero', fields:[
+    ['home_kicker','Kicker (top line)','text'],
+    ['home_hero_title_1','Hero title line 1','text'],
+    ['home_hero_title_2','Hero title line 2 (HTML ok)','text'],
+    ['home_hero_lede','Hero paragraph','area'],
+    ['home_stat_customers','Customers number','text'],
+  ]},
+  { title:'Homepage — Sections', fields:[
+    ['home_statement','Statement (big line)','area'],
+    ['home_materials_lede','Materials section text','area'],
+  ]},
+  { title:'Candles page', fields:[['candles_hero','Heading','text'],['candles_lede','Paragraph','area']]},
+  { title:'Soap page', fields:[['soap_hero','Heading','text'],['soap_lede','Paragraph','area']]},
+  { title:'Concrete page', fields:[['concrete_hero','Heading','text'],['concrete_lede','Paragraph','area']]},
+  { title:'Resin page', fields:[['resin_hero','Heading','text'],['resin_lede','Paragraph','area']]},
+  { title:'Contact', fields:[['contact_response','Response time text','text']]},
+];
+const images = [
+  ['home_hero_image','Homepage hero image (optional)'],
+];
+---
+<Base title="Admin — Content — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head">
+        <div><span class="kicker">Saancha Admin</span><h1>Site content</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
+      </div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content" class="on">Content</a>
+      </nav>
+      {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
+
+      <form method="POST" class="admin-form">
+        <input type="hidden" name="action" value="save">
+        {groups.map(g => (
+          <section class="admin-card">
+            <h2>{g.title}</h2>
+            {g.fields.map(([key,label,type]) => (
+              <label>{label}
+                {type==='area'
+                  ? <textarea name={`k_${key}`} rows="3">{val(key)}</textarea>
+                  : <input name={`k_${key}`} value={val(key)} />}
+              </label>
+            ))}
+          </section>
+        ))}
+        <button class="btn" type="submit" style="position:sticky;bottom:20px">Save all content</button>
+      </form>
+
+      <section class="admin-card">
+        <h2>Images</h2>
+        <p class="pricenote" style="margin-top:0">Upload ek image, woh us jagah lag jaayegi. (Redeploy ke baad live dikhega.)</p>
+        {images.map(([key,label]) => (
+          <div class="img-row">
+            <div>
+              <b>{label}</b>
+              {val(key) ? <img src={val(key)} alt="" class="img-preview" /> : <span class="img-none">No image set</span>}
+            </div>
+            <form method="POST" enctype="multipart/form-data" class="img-form">
+              <input type="hidden" name="action" value="upload">
+              <input type="hidden" name="key" value={key}>
+              <input type="file" name="file" accept="image/*" required>
+              <button class="mini-btn" type="submit">Upload</button>
+            </form>
+          </div>
+        ))}
+      </section>
+    </div>
+  </main>
+</Base>

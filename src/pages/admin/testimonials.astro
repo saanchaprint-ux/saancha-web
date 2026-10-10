@@ -49,7 +49,7 @@ const list = data || [];
         <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
       </div>
       <nav class="admin-nav">
-        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials" class="on">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a>
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials" class="on">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content">Content</a>
       </nav>
 
       {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}

@@ -20,12 +20,12 @@ create policy "pricing public read" on public.pricing for select using (true);
 -- default placeholder rules (admin baad me badlega)
 insert into public.pricing (id, rules) values (1, '{
   "currency": "₹",
+  "designBase":  { "simple": 500, "detailed": 1200 },
+  "logoCharge":  400,
   "base":        { "candle": 800, "soap": 700, "resin": 900, "concrete": 1000, "edible": 750 },
   "sizeMult":    { "2": 1.0, "3": 1.3, "4": 1.6, "5": 2.0 },
-  "complexityMult": { "simple": 1.0, "detailed": 1.5 },
-  "logoCharge":  300,
   "qtyTiers":    [ {"min":1,"mult":1.0}, {"min":5,"mult":0.92}, {"min":10,"mult":0.85} ],
-  "note": "Placeholder pricing. Admin → Pricing se badlo."
+  "note": "Placeholder. designBase+logo = one-time design cost. base*sizeMult = per-mould. qty applies only to mould cost."
 }'::jsonb)
 on conflict (id) do nothing;
 
