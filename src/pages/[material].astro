@@ -9,12 +9,9 @@ import { materialsContent } from '../data/materials-content.js';
 import { loadContent, c as cc } from '../lib/content.js';
 import { supabaseAuth } from '../lib/supabase.js';
 
-export function getStaticPaths() {
-  return Object.keys(materialsContent).map(slug => ({ params: { material: slug } }));
-}
-
 const { material } = Astro.params;
-const c = materialsContent[material];
+const c = Object.prototype.hasOwnProperty.call(materialsContent, material) ? materialsContent[material] : null;
+if (!c) return Astro.redirect('/shop', 302);
 const content = await loadContent();
 const heroText = cc(content, `${material}_hero`, c.hero);
 const ledeText = cc(content, `${material}_lede`, c.lede);
