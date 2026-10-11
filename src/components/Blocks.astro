@@ -1,0 +1,70 @@
+---
+// Flexible content blocks for a page. Reads from Supabase, renders in order.
+// Empty = nothing shows (existing page design untouched).
+import { supabaseAuth } from '../lib/supabase.js';
+const { page } = Astro.props;
+
+let blocks = [];
+try {
+  const sb = supabaseAuth();
+  const { data } = await sb.from('blocks').select('*')
+    .eq('page', page).eq('published', true).order('sort', { ascending: true });
+  blocks = data || [];
+} catch(e) { blocks = []; }
+---
+{blocks.map(b => {
+  const d = b.data || {};
+  if (b.type === 'heading') return (
+    <section class="blk blk-heading"><div class="wrap">
+      {d.kicker && <span class="kicker rvu" style="display:block;margin-bottom:14px">{d.kicker}</span>}
+      {d.heading && <h2 class="rvu">{d.heading}</h2>}
+      {d.text && <p class="lede rvu" style="margin-top:16px">{d.text}</p>}
+    </div></section>
+  );
+  if (b.type === 'imagetext') return (
+    <section class="blk blk-imagetext"><div class={`wrap in${d.flip?' flip':''}`}>
+      <div class="txt rvu">
+        {d.kicker && <span class="kicker" style="display:block;margin-bottom:14px">{d.kicker}</span>}
+        {d.heading && <h2>{d.heading}</h2>}
+        {d.text && <p>{d.text}</p>}
+        {d.cta_label && d.cta_url && <a href={d.cta_url} class="btn" style="margin-top:20px" data-mag>{d.cta_label}</a>}
+      </div>
+      <div class="vis rvu">{d.image && <img src={d.image} alt={d.heading||''} loading="lazy" />}</div>
+    </div></section>
+  );
+  if (b.type === 'banner') return (
+    <section class="blk blk-banner rvu">
+      {d.image && <img src={d.image} alt={d.heading||''} loading="lazy" />}
+      <div class="blk-banner-cap"><div class="wrap">
+        {d.heading && <h2>{d.heading}</h2>}
+        {d.text && <p>{d.text}</p>}
+      </div></div>
+    </section>
+  );
+  if (b.type === 'gallery') return (
+    <section class="blk blk-gallery"><div class="wrap">
+      {d.heading && <h2 class="rvu" style="margin-bottom:28px">{d.heading}</h2>}
+      <div class="g-grid">
+        {(d.images||[]).map(src => <div class="g-item rvu"><img src={src} alt="" loading="lazy" /></div>)}
+      </div>
+    </div></section>
+  );
+  if (b.type === 'cta') return (
+    <section class="blk blk-cta rvu"><div class="wrap">
+      {d.heading && <h2>{d.heading}</h2>}
+      {d.text && <p>{d.text}</p>}
+      {d.cta_label && d.cta_url && <a href={d.cta_url} class="btn" data-mag>{d.cta_label}</a>}
+    </div></section>
+  );
+  if (b.type === 'steps') return (
+    <section class="blk blk-steps"><div class="wrap">
+      {d.heading && <h2 class="rvu" style="margin-bottom:28px">{d.heading}</h2>}
+      <div class="steps-row">
+        {(d.items||[]).map((it,i) => (
+          <div class="s rvu"><div class="n">{String(i+1).padStart(2,'0')}</div><h4>{it.title}</h4><p>{it.text}</p></div>
+        ))}
+      </div>
+    </div></section>
+  );
+  return null;
+})}

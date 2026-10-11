@@ -1,0 +1,157 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+const sb = supabaseAdmin();
+let notice = '';
+const PAGES = ['home','candles','soap','concrete','resin','custom-moulds'];
+const curPage = (Astro.url.searchParams.get('page') || 'home');
+
+async function uploadImg(file, prefix){
+  if (!file || !file.size) return '';
+  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const path = `block-${prefix}-${Date.now()}.${ext}`;
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const { error } = await sb.storage.from('site-images').upload(path, buf, { contentType:file.type, upsert:true });
+  if (error) return '';
+  return sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;
+}
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const action = f.get('action')?.toString();
+  if (action === 'logout') { clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+
+  if (action === 'add') {
+    const type = f.get('type')?.toString();
+    const page = f.get('page')?.toString() || 'home';
+    const d = {};
+    // common
+    ['kicker','heading','text','cta_label','cta_url'].forEach(k=>{ const v=f.get(k)?.toString().trim(); if(v) d[k]=v; });
+    if (f.get('flip')==='on') d.flip = true;
+    // image (imagetext/banner)
+    const img = await uploadImg(f.get('image'), type);
+    if (img) d.image = img;
+    // gallery: up to 6 images
+    if (type==='gallery'){
+      const imgs=[];
+      for (let i=0;i<6;i++){ const u=await uploadImg(f.get('g'+i),'gal'); if(u) imgs.push(u); }
+      if (imgs.length) d.images = imgs;
+    }
+    // steps: up to 4 items
+    if (type==='steps'){
+      const items=[];
+      for (let i=0;i<4;i++){ const t=f.get('st'+i)?.toString().trim(); const x=f.get('sx'+i)?.toString().trim(); if(t) items.push({title:t,text:x||''}); }
+      if (items.length) d.items = items;
+    }
+    const sort = parseInt(f.get('sort')?.toString()||'0');
+    const { error } = await sb.from('blocks').insert({ page, type, sort, data:d, published:true });
+    notice = error ? 'Error: '+error.message : 'Block added.';
+  }
+  if (action === 'del') {
+    const { error } = await sb.from('blocks').delete().eq('id', f.get('id')?.toString());
+    notice = error ? 'Error: '+error.message : 'Block removed.';
+  }
+  if (action === 'move') {
+    const id=f.get('id')?.toString(); const dir=parseInt(f.get('dir')?.toString()||'0');
+    const { data:cur } = await sb.from('blocks').select('*').eq('id',id).single();
+    if (cur){ await sb.from('blocks').update({ sort: cur.sort + dir }).eq('id', id); }
+    notice = 'Order updated.';
+  }
+  if (action === 'toggle') {
+    const id=f.get('id')?.toString(); const pub=f.get('published')==='true';
+    await sb.from('blocks').update({ published: !pub }).eq('id', id);
+    notice = 'Updated.';
+  }
+}
+
+const { data } = await sb.from('blocks').select('*').eq('page', curPage).order('sort', { ascending:true });
+const list = data || [];
+---
+<Base title="Admin — Sections — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head"><div><span class="kicker">Saancha Admin</span><h1>Page sections</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form></div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content">Content</a><a href="/admin/blocks" class="on">Sections</a>
+      </nav>
+      {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
+
+      <!-- page picker -->
+      <div class="blk-pages">
+        {PAGES.map(p => <a href={`/admin/blocks?page=${p}`} class={`chip${p===curPage?' on':''}`}>{p}</a>)}
+      </div>
+
+      <!-- existing blocks -->
+      <section class="admin-card">
+        <h2>Sections on “{curPage}” ({list.length})</h2>
+        {list.length===0 && <p style="color:var(--fg-45)">No extra sections yet. Add one below — your page design stays the same, this adds on top.</p>}
+        <div class="blk-list">
+          {list.map(b => (
+            <div class="blk-item">
+              <div><b>{b.type}</b><span>{b.data?.heading || b.data?.kicker || '—'}</span><span class="mono" style="color:var(--fg-45)">sort {b.sort}{b.published?'':' · hidden'}</span></div>
+              <div class="blk-item-actions">
+                <form method="POST"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value={b.id}><input type="hidden" name="dir" value="-1"><button class="mini-btn">↑</button></form>
+                <form method="POST"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value={b.id}><input type="hidden" name="dir" value="1"><button class="mini-btn">↓</button></form>
+                <form method="POST"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value={b.id}><input type="hidden" name="published" value={String(b.published)}><button class="mini-btn">{b.published?'Hide':'Show'}</button></form>
+                <form method="POST" onsubmit="return confirm('Remove this section?')"><input type="hidden" name="action" value="del"><input type="hidden" name="id" value={b.id}><button class="mini-btn danger">Delete</button></form>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- add block -->
+      <section class="admin-card">
+        <h2>Add a section</h2>
+        <form method="POST" enctype="multipart/form-data" class="admin-form" id="blkForm">
+          <input type="hidden" name="action" value="add">
+          <input type="hidden" name="page" value={curPage}>
+          <div class="ag">
+            <label>Type
+              <select name="type" id="blkType">
+                <option value="heading">Heading + text</option>
+                <option value="imagetext">Image + text</option>
+                <option value="banner">Full-width banner</option>
+                <option value="gallery">Gallery</option>
+                <option value="cta">Call to action</option>
+                <option value="steps">Steps / features</option>
+              </select>
+            </label>
+            <label>Sort order <input name="sort" type="number" value={list.length}></label>
+          </div>
+
+          <div class="bf" data-for="heading imagetext banner cta steps"><label>Kicker (small top line) <input name="kicker"></label></div>
+          <div class="bf" data-for="heading imagetext banner cta gallery steps"><label>Heading <input name="heading"></label></div>
+          <div class="bf" data-for="heading imagetext banner cta"><label>Text <textarea name="text" rows="2"></textarea></label></div>
+          <div class="bf" data-for="imagetext cta"><label>Button label <input name="cta_label"></label><label>Button URL <input name="cta_url" placeholder="/custom-moulds or https://…"></label></div>
+          <div class="bf" data-for="imagetext"><label style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" name="flip" style="width:auto"> Image on left</label></div>
+          <div class="bf" data-for="imagetext banner"><label>Image <input type="file" name="image" accept="image/*"></label></div>
+          <div class="bf" data-for="gallery"><label>Gallery images (up to 6)
+            <div class="ag">{[0,1,2,3,4,5].map(i => <input type="file" name={'g'+i} accept="image/*">)}</div>
+          </label></div>
+          <div class="bf" data-for="steps"><label>Steps (up to 4)
+            {[0,1,2,3].map(i => <div class="ag"><input name={'st'+i} placeholder={`Step ${i+1} title`}><input name={'sx'+i} placeholder="Step text"></div>)}
+          </label></div>
+
+          <button class="btn" type="submit">Add section</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script is:inline>
+    (function(){
+      const type = document.getElementById('blkType');
+      const fields = document.querySelectorAll('.bf');
+      function sync(){
+        const t = type.value;
+        fields.forEach(f => { f.style.display = f.dataset.for.split(' ').includes(t) ? '' : 'none'; });
+      }
+      type.addEventListener('change', sync); sync();
+    })();
+  </script>
+</Base>
