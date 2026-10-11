@@ -5,10 +5,19 @@ import { createClient } from '@supabase/supabase-js';
 const ADMIN_COOKIE = 'saancha-admin';
 
 // HMAC-SHA256 signed, time-limited administrator cookie. Requires Node runtime.
-import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
+import { createHmac, createHash, timingSafeEqual, randomBytes } from 'node:crypto';
 const SESSION_SECONDS = 60 * 60 * 8;
 export function adminPassword() { return import.meta.env.ADMIN_PASSWORD || ''; }
-function secret() { return import.meta.env.ADMIN_SESSION_SECRET || ''; }
+// Backwards compatible with deployments that only configured ADMIN_PASSWORD.
+// Prefer ADMIN_SESSION_SECRET; use a server-only service key when available.
+// The password-based fallback is for migration only: configure a strong, separate
+// ADMIN_SESSION_SECRET on the server as soon as possible.
+function secret() {
+  const configured = import.meta.env.ADMIN_SESSION_SECRET;
+  if (configured) return configured;
+  const base = import.meta.env.SUPABASE_SERVICE_ROLE || adminPassword();
+  return base ? createHash('sha256').update('saancha-admin-session-v2:' + base).digest('hex') : '';
+}
 function signature(payload) { return createHmac('sha256', secret()).update(payload).digest('hex'); }
 export function isAdmin(cookies) {
   if (!adminPassword() || !secret()) return false;

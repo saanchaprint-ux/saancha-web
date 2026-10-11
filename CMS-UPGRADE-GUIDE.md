@@ -7,14 +7,14 @@
 - Structured navigation/global settings editor (stored server-side; nav rendering integration remains future work).
 - Existing section editor now supports editing text and image URL, while retaining the original rendered style.
 - Existing site content keys and hero poster remain editable. Stale process-wide content caching removed.
-- Existing weak password-derived admin cookie replaced with HMAC-signed expiring session, with a mandatory session secret.
+- Existing weak password-derived admin cookie replaced with HMAC-signed expiring session, with a dedicated session secret (recommended), or a backwards-compatible server-only fallback.
 - Product, setting and block snapshots stored before edits for audit/recovery; revision browsing/revert UI is not yet built.
 
 ## Deployment checklist
 1. Back up your current Supabase database and storage; keep original deployment for rollback.
 2. Run original SQL files if not previously run, then execute `db/cms-upgrade.sql` in your Supabase SQL editor.
 3. Ensure existing public bucket `site-images` exists, and configure Supabase URL, anon key and SERVICE ROLE only on the server.
-4. Set `ADMIN_PASSWORD` and a long unique random `ADMIN_SESSION_SECRET` in your hosting environment, and locally in `.env`. Old admin sessions automatically stop working.
+4. Keep your existing `ADMIN_PASSWORD` in the hosting environment and local `.env`. A long random `ADMIN_SESSION_SECRET` is strongly recommended; the admin login also works without it during migration using a server-side fallback. Old admin cookies are invalid; log in again.
 5. Run `npm ci`, `npm run build`, and preview on staging. Test order, customer account and quotation workflows.
 6. Sign in at `/admin/login`, then visit `/admin/products`, `/admin/media`, `/admin/settings`, `/admin/blocks`.
 7. Create a **draft** product; add variants after the initial save, then publish it. Category page uses CMS products once at least one published CMS item exists in that category.
