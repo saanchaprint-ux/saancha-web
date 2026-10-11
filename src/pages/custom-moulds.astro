@@ -3,6 +3,7 @@ export const prerender = false;  // SSR: load latest pricing + handle quote POST
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import Blocks from '../components/Blocks.astro';
 import { site } from '../data/site.js';
 import { supabaseAuth, getUser } from '../lib/supabase.js';
 
@@ -198,6 +199,8 @@ if (Astro.request.method === 'POST') {
       )}
     </div>
   </section>
+
+  <Blocks page="custom-moulds" />
 
   <Footer slot="footer" />
 </Base>
