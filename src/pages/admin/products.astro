@@ -28,7 +28,7 @@ const edit=(products||[]).find(p=>p.id===Astro.url.searchParams.get('edit'));
 ---
 <Base title="Product manager — Saancha Studio"><main class="admin"><div class="wrap">
  <div class="admin-head"><div><span class="kicker">Saancha Studio</span><h1>Products & SKUs</h1></div><a class="btn ghost" href="/admin">Dashboard</a></div>
- <nav class="admin-nav"><a href="/admin">Orders</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a><a href="/admin/products" class="on">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a></nav>
+ <nav class="admin-nav"><a href="/admin/studio" style="border-color:#e9a65e;color:#e9a65e">✦ Visual Studio</a><a href="/admin">Orders</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a><a href="/admin/products" class="on">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a></nav>
  {loadError && <p class="err">Database upgrade required: {loadError.message}. Run db/cms-upgrade.sql.</p>}
  {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
  <section class="admin-card"><h2>{edit?'Edit product':'Add product'}</h2><form method="POST" class="admin-form">

@@ -77,7 +77,7 @@ const images = [
         <div><span class="kicker">Saancha Admin</span><h1>Site content</h1></div>
         <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
       </div>
-      <nav class="admin-nav">
+      <nav class="admin-nav"><a href="/admin/studio" style="border-color:#e9a65e;color:#e9a65e">✦ Visual Studio</a>
         <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content" class="on">Content</a><a href="/admin/products">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a><a href="/admin/blocks">Sections</a>
       </nav>
       {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}

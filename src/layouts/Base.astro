@@ -1,12 +1,20 @@
 ---
 import '../styles/global.css';
 import { site } from '../data/site.js';
+import { supabaseAdmin, isAdmin } from '../lib/admin.js';
 const {
   title = `${site.name} — Casting Molds, Made in ${site.city}`,
   description = `${site.name} designs and manufactures casting molds in Delhi — candles, soap, resin, concrete. No minimum order, 5–7 day turnaround.`,
   ogImage = '',
   jsonld = null,
 } = Astro.props;
+const studioPreview = Astro.url.searchParams.get('studio') === '1' && isAdmin(Astro.cookies);
+const cmsPage = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/$/, '');
+let visualEdits = [];
+try {
+ const {data,error} = await supabaseAdmin().from('cms_visual_edits').select('selector,property,draft_value,published_value').eq('page',cmsPage);
+ if(!error) visualEdits = (data||[]).map(row=>({selector:row.selector,property:row.property,value:studioPreview && row.draft_value!==null?row.draft_value:row.published_value})).filter(row=>row.value!==null);
+} catch {}
 const canonical = new URL(Astro.url.pathname, site.domain).href;
 ---
 <!DOCTYPE html>
@@ -49,6 +57,9 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
   <slot name="footer" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" is:inline></script>
+  <script id="saancha-visual-data" type="application/json" set:html={JSON.stringify(visualEdits).replace(/</g,'\\u003c')} />
+  <script src="/visual-runtime.js" is:inline></script>
+  {studioPreview && <script src="/studio-frame.js" is:inline></script>}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" is:inline></script>
   <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js" is:inline></script>
   <script src="/site.js" is:inline></script>
