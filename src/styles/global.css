@@ -625,3 +625,32 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .blk-item span{color:var(--fg-70);font-size:.84rem}
 .blk-item-actions{display:flex;gap:6px;flex-wrap:wrap}
 .bf{margin-bottom:4px}
+
+/* Saancha customer account / commerce dashboard */
+.acct2.account{padding-top:130px;background:radial-gradient(ellipse at 85% 0%,rgba(230,161,92,.07),transparent 38%)}
+.acct2 .acc-head{margin-bottom:30px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.commerce-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:30px}
+.commerce-stat{padding:23px 26px;border:1px solid var(--line);border-radius:16px;background:var(--panel);display:flex;flex-direction:column;gap:9px}
+.commerce-stat>span{font:600 .78rem 'Space Grotesk',sans-serif;color:var(--fg-70)}
+.commerce-stat strong{font:400 2.6rem 'Fraunces',serif;color:var(--fg)}
+.commerce-stat small{color:var(--fg-45);font-size:.75rem}
+.commerce-layout{display:grid;grid-template-columns:235px minmax(0,1fr);align-items:start;gap:32px}
+.acct2 .acct-tabs{position:sticky;top:100px;display:flex;flex-direction:column;gap:5px;margin:0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.commerce-nav-title{font-size:.64rem;font-family:'Space Mono',monospace;letter-spacing:.16em;color:var(--fg-45);padding:10px 12px 16px}
+.acct2 .acct-tabs .at{display:flex;align-items:center;gap:13px;margin:0;width:100%;text-align:left;border:0;border-radius:9px;padding:15px 12px;color:var(--fg-70);font-size:.88rem}
+.acct2 .acct-tabs .at>span:first-child{font-size:1.2rem;width:21px;text-align:center}
+.acct2 .acct-tabs .at.on{background:rgba(230,161,92,.13);color:var(--amber)}
+.acct2 .acct-tabs .at:hover{background:rgba(230,161,92,.08)}
+.nav-count{margin-left:auto;font-family:'Space Mono',monospace;font-size:.7rem}
+.commerce-nav-bottom{border-top:1px solid var(--line);margin-top:15px;padding:17px 12px 6px;display:flex;flex-direction:column;gap:17px}
+.commerce-nav-bottom a{font-size:.83rem;color:var(--fg-70);text-decoration:none}
+.commerce-nav-bottom a:hover{color:var(--amber)}
+.commerce-content{min-width:0}.commerce-content .acc-bar{margin-bottom:20px}.commerce-content .acc-bar h2{font-size:1.8rem}
+.commerce-content .otable{background:transparent;gap:12px;border:0;border-radius:0;overflow:visible}
+.commerce-content .orow{border:1px solid var(--line);border-radius:13px;grid-template-columns:1fr 1.5fr 1fr 1.1fr auto;padding:24px 18px;gap:12px}
+.commerce-content .orow:hover{border-color:rgba(230,161,92,.48)}
+.commerce-empty{background:var(--panel);padding:80px 24px;border:1px solid var(--line)}
+.commerce-empty-icon{display:grid;place-items:center;background:rgba(230,161,92,.1);width:64px;height:64px;border-radius:18px;color:var(--amber);font-size:2rem;margin:0 auto 20px}
+.commerce-empty h3{font-size:1.6rem;margin-bottom:10px}.commerce-empty .sub{max-width:390px;margin:10px auto 25px}
+@media(max-width:1000px){.commerce-layout{grid-template-columns:195px minmax(0,1fr);gap:20px}.commerce-content .orow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.commerce-stats{gap:9px}.commerce-stat{padding:16px 12px}.commerce-stat strong{font-size:2rem}.commerce-stat small{font-size:.67rem}.commerce-layout{display:block}.acct2 .acct-tabs{position:static;flex-direction:row;overflow-x:auto;flex-wrap:nowrap;margin-bottom:25px;padding:8px}.acct2 .acct-tabs .at{white-space:nowrap;width:auto;font-size:.75rem}.commerce-nav-title,.commerce-nav-bottom,.nav-count{display:none}.commerce-content .orow{grid-template-columns:repeat(2,minmax(0,1fr));padding:17px}.commerce-content .acc-bar h2{font-size:1.5rem}}

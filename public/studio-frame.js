@@ -7,6 +7,6 @@
  function pick(el){if(selected)selected.removeAttribute('data-studio-selected');selected=el;el.setAttribute('data-studio-selected','');const property=el.tagName==='IMG'?'src':el.tagName==='A'?'href':'text';const value=property==='text'?el.textContent.trim():el.getAttribute(property)||'';window.parent.postMessage({studio:'selected',selector:cssPath(el),property,value,tag:el.tagName},location.origin)}
  document.addEventListener('click',e=>{const el=e.target.closest(EDITABLE);if(!el)return;e.preventDefault();e.stopPropagation();pick(el)},true);
  document.addEventListener('submit',e=>e.preventDefault(),true);
- window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.studio!=='update')return;window.__saanchaVisualApply?.(e.data.row);if(selected&&selected.matches(e.data.row.selector))pick(selected)});
+ window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.studio!=='update')return;window.__saanchaVisualApply?.(e.data.row);});
  window.parent.postMessage({studio:'ready'},location.origin);
 })();

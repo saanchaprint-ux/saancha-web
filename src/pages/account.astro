@@ -72,25 +72,31 @@ const qStatusColor = { 'submitted':'#E6A15C','under-review':'#E6A15C','quote-rea
 
       {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
 
-      <!-- tabs -->
-      <nav class="acct-tabs">
-        <button class="at on" data-tab="orders">Orders</button>
-        <button class="at" data-tab="requests">Custom requests</button>
-        <button class="at" data-tab="addresses">Addresses</button>
-        <button class="at" data-tab="profile">Profile</button>
-      </nav>
+      <div class="commerce-stats" aria-label="Your account overview">
+        <div class="commerce-stat"><span>All orders</span><strong>{list.length}</strong><small>Your purchase history</small></div>
+        <div class="commerce-stat"><span>Active orders</span><strong>{list.filter(o=>!['delivered','cancelled'].includes(o.status)).length}</strong><small>Processing and shipping</small></div>
+        <div class="commerce-stat"><span>Custom enquiries</span><strong>{qlist.length}</strong><small>Quotes and requests</small></div>
+      </div>
+      <div class="commerce-layout"><nav class="acct-tabs" aria-label="Account navigation">
+        <span class="commerce-nav-title">MY ACCOUNT</span>
+        <button class="at on" data-tab="orders"><span>◫</span> Order history <span class="nav-count">{list.length}</span></button>
+        <button class="at" data-tab="requests"><span>◇</span> Custom requests <span class="nav-count">{qlist.length}</span></button>
+        <button class="at" data-tab="addresses"><span>⌖</span> Saved addresses</button>
+        <button class="at" data-tab="profile"><span>◉</span> My profile</button>
+        <div class="commerce-nav-bottom"><a href="/shop">Browse the shop →</a><a href="/logout">Sign out ↗</a></div>
+      </nav><div class="commerce-content">
 
       <!-- ORDERS -->
       <section class="acct-panel" data-panel="orders">
-        <div class="acc-bar"><h2>Your orders</h2><a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20to%20place%20an%20order`} target="_blank" rel="noopener" class="btn">New order on WhatsApp</a></div>
+        <div class="acc-bar"><h2>Your orders</h2><a href="/shop" class="btn">Shop products</a></div>
         {list.length===0 ? (
-          <div class="empty"><p>No orders yet.</p><p class="sub">Once you place an order, it'll show up here with its status.</p><a href="/#materials" class="btn ghost">Browse molds</a></div>
+          <div class="empty commerce-empty"><span class="commerce-empty-icon">▤</span><h3>Your order history is empty</h3><p class="sub">Orders linked to your account will appear here, with their progress and details.</p><a href="/shop" class="btn">Explore products →</a></div>
         ) : (
           <div class="otable">
             {list.map(o => (
-              <div class="orow">
+              <div class="orow commerce-order">
                 <div class="ocol"><span class="mono">Order</span><b>{o.order_no || o.id.slice(0,8)}</b></div>
-                <div class="ocol"><span class="mono">Item</span><b>{o.item}</b><span class="meta">{o.material} · qty {o.quantity}</span></div>
+                <div class="ocol"><span class="mono">Item</span><b>{o.item}</b><span class="meta">{o.material} · Qty {o.quantity}</span></div>
                 <div class="ocol"><span class="mono">Amount</span><b>{o.amount ? '₹'+o.amount : '—'}</b></div>
                 <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${oStatusColor[o.status]||'#E6A15C'};border-color:${oStatusColor[o.status]||'#E6A15C'}`}>{o.status}</span></div>
                 <div class="ocol"><a class="reorder" href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi, I want to reorder: '+o.item)}`} target="_blank" rel="noopener">Reorder →</a></div>
@@ -167,6 +173,7 @@ const qStatusColor = { 'submitted':'#E6A15C','under-review':'#E6A15C','quote-rea
           <p class="pricenote">Password badalna hai? <a href="/forgot" style="color:var(--amber)">Reset it here</a>.</p>
         </div>
       </section>
+      </div></div>
     </div>
   </main>
   <Footer slot="footer" />
