@@ -14,8 +14,9 @@ const wa = site.whatsapp;
 const heroVid = video("mold-rotate.mp4", "hf_20260824_035050_fc4dfd89-cdb1-4a4e-b5ef-4bfa6d5378b7.mp4");
 const demoldVid = video("mold-demold.mp4", "hf_20260905_103654_3226d0f5-524b-4a36-9d3c-722e3eb5f20f.mp4");
 const rangeVid = video("range.mp4", "hf_20260824_044007_8c4635fa-026f-48fd-a032-211a2a67a150.mp4");
-const heroPoster = asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png");
+const defaultHeroPoster = asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png");
 
+const heroPoster = c(content,"home_hero_image",defaultHeroPoster);
 const mats = [
   { slug:"candles",  n:"M/01", label:"Candles", desc:"Ribbed pillars, tapers, sculpted shapes. Wax releases clean from flexible silicone.", img: asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png") },
   { slug:"soap",     n:"M/02", label:"Soap & bath", desc:"Faceted bars, embeds, layered pours. Crisp edges, every batch.", img: asset("soap.png","hf_20260905_141240_d85649fa-8c7e-4df4-a784-a745e6f621a8.png") },

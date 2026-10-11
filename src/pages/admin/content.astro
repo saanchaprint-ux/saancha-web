@@ -20,7 +20,7 @@ if (Astro.request.method === 'POST') {
     }
     if (rows.length) {
       const { error } = await sb.from('content').upsert(rows);
-      notice = error ? ('Error: '+error.message) : 'Content saved. Redeploy to reflect on live site.';
+      notice = error ? ('Error: '+error.message) : 'Content saved. Refresh the live page to verify.';
     }
   }
 
@@ -78,7 +78,7 @@ const images = [
         <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form>
       </div>
       <nav class="admin-nav">
-        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content" class="on">Content</a><a href="/admin/blocks">Sections</a>
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content" class="on">Content</a><a href="/admin/products">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a><a href="/admin/blocks">Sections</a>
       </nav>
       {notice && <p class={notice.startsWith('Error') ? 'err' : 'ok'}>{notice}</p>}
 
@@ -101,7 +101,7 @@ const images = [
 
       <section class="admin-card">
         <h2>Images</h2>
-        <p class="pricenote" style="margin-top:0">Upload ek image, woh us jagah lag jaayegi. (Redeploy ke baad live dikhega.)</p>
+        <p class="pricenote" style="margin-top:0">Upload ek image, woh us jagah lag jaayegi. (Refresh live page to verify.)</p>
         {images.map(([key,label]) => (
           <div class="img-row">
             <div>

@@ -1,0 +1,24 @@
+---
+export const prerender=false;
+import Base from '../../layouts/Base.astro';
+import {isAdmin,supabaseAdmin} from '../../lib/admin.js';
+import {randomUUID} from 'node:crypto';
+if(!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+const sb=supabaseAdmin();let notice='';
+if(Astro.request.method==='POST'){
+ const f=await Astro.request.formData();const action=String(f.get('action')||'');
+ if(action==='upload'){
+ const file=f.get('file'); const alt=String(f.get('alt')||'').slice(0,300);
+ if(!file || !file.size || file.size>8*1024*1024 || !['image/jpeg','image/png','image/webp','image/gif','image/avif'].includes(file.type))notice='Error: Use JPEG, PNG, WebP, GIF or AVIF under 8 MB.';
+ else {const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'})[file.type];const path=`cms/${randomUUID()}.${ext}`;
+ const {error}=await sb.storage.from('site-images').upload(path,new Uint8Array(await file.arrayBuffer()),{contentType:file.type,upsert:false});
+ if(error)notice='Error: '+error.message;else{const url=sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;const {error:e}=await sb.from('cms_media').insert({path,url,alt_text:alt});notice=e?'Error: '+e.message:'Image uploaded.';}}
+ }
+ if(action==='delete'){const id=String(f.get('id')||'');const {data}=await sb.from('cms_media').select('path').eq('id',id).single();if(data){await sb.storage.from('site-images').remove([data.path]);const {error}=await sb.from('cms_media').delete().eq('id',id);notice=error?'Error: '+error.message:'Image removed.';}}
+}
+const {data:images,error}=await sb.from('cms_media').select('*').order('created_at',{ascending:false}).limit(120);
+---
+<Base title="Media library — Saancha Studio"><main class="admin"><div class="wrap"><div class="admin-head"><div><span class="kicker">Saancha Studio</span><h1>Media library</h1></div><a class="btn ghost" href="/admin">Dashboard</a></div><nav class="admin-nav"><a href="/admin">Orders</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a><a href="/admin/products">Products</a><a class="on" href="/admin/media">Media</a><a href="/admin/settings">Settings</a></nav>
+ {error && <p class="err">Run db/cms-upgrade.sql: {error.message}</p>}{notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
+ <section class="admin-card"><h2>Upload image</h2><form class="admin-form" method="POST" enctype="multipart/form-data"><input type="hidden" name="action" value="upload"/><label>Image<input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" required/></label><label>Alt text<input name="alt" placeholder="Describe the image"/></label><button class="btn">Upload</button></form></section>
+ <section class="admin-card"><h2>Saved images</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px">{(images||[]).map(im=><div style="min-width:0"><img src={im.url} alt={im.alt_text} loading="lazy" style="width:100%;height:140px;object-fit:cover"/><p style="overflow-wrap:anywhere;font-size:12px">{im.alt_text||im.path}</p><input aria-label="Image URL" readonly value={im.url} onclick="this.select()" style="width:100%;font-size:11px"/><form method="POST" onsubmit="return confirm('Delete this stored image? Existing references may break.')"><input type="hidden" name="action" value="delete"/><input type="hidden" name="id" value={im.id}/><button class="mini-btn danger">Delete</button></form></div>)}</div></section></div></main></Base>

@@ -1,15 +1,12 @@
 // Site content loader — reads editable content from Supabase with fallbacks.
 import { supabaseAuth } from './supabase.js';
 
-let _cache = null;
 export async function loadContent() {
-  if (_cache) return _cache;
   try {
     const sb = supabaseAuth();
     const { data } = await sb.from('content').select('key,value');
-    _cache = Object.fromEntries((data||[]).map(r => [r.key, r.value]));
-  } catch (e) { _cache = {}; }
-  return _cache;
+    return Object.fromEntries((data||[]).map(r => [r.key, r.value]));
+  } catch (e) { return {}; }
 }
 
 // get with fallback: c(content, 'key', 'default text')

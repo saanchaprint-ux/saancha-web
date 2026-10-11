@@ -50,6 +50,15 @@ if (Astro.request.method === 'POST') {
     const { error } = await sb.from('blocks').insert({ page, type, sort, data:d, published:true });
     notice = error ? 'Error: '+error.message : 'Block added.';
   }
+  if(action==='edit') {
+    const id=f.get('id')?.toString();
+    const {data:old}=await sb.from('blocks').select('*').eq('id',id).single();
+    if(old){await sb.from('cms_revisions').insert({entity:'block',entity_id:id,snapshot:old});
+      const next={...old.data};for(const key of ['kicker','heading','text','cta_label','cta_url','image']){if(f.has(key))next[key]=String(f.get(key)||'').trim();}
+      const {error}=await sb.from('blocks').update({data:next}).eq('id',id);
+      notice=error?'Error: '+error.message:'Block updated.';
+    }
+  }
   if (action === 'del') {
     const { error } = await sb.from('blocks').delete().eq('id', f.get('id')?.toString());
     notice = error ? 'Error: '+error.message : 'Block removed.';
@@ -76,7 +85,7 @@ const list = data || [];
       <div class="admin-head"><div><span class="kicker">Saancha Admin</span><h1>Page sections</h1></div>
         <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form></div>
       <nav class="admin-nav">
-        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content">Content</a><a href="/admin/blocks" class="on">Sections</a>
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content">Content</a><a href="/admin/products">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a><a href="/admin/blocks" class="on">Sections</a>
       </nav>
       {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
 
@@ -93,6 +102,7 @@ const list = data || [];
           {list.map(b => (
             <div class="blk-item">
               <div><b>{b.type}</b><span>{b.data?.heading || b.data?.kicker || '—'}</span><span class="mono" style="color:var(--fg-45)">sort {b.sort}{b.published?'':' · hidden'}</span></div>
+              <details style="margin-top:12px"><summary style="cursor:pointer">Edit content</summary><form method="POST" class="admin-form"><input type="hidden" name="action" value="edit"/><input type="hidden" name="id" value={b.id}/>{['kicker','heading','text','cta_label','cta_url','image'].map(k=><label>{k}<input name={k} value={b.data?.[k]||''}/></label>)}<button class="mini-btn">Save block</button></form></details>
               <div class="blk-item-actions">
                 <form method="POST"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value={b.id}><input type="hidden" name="dir" value="-1"><button class="mini-btn">↑</button></form>
                 <form method="POST"><input type="hidden" name="action" value="move"><input type="hidden" name="id" value={b.id}><input type="hidden" name="dir" value="1"><button class="mini-btn">↓</button></form>

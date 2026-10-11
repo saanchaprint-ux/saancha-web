@@ -4,32 +4,29 @@ import { createClient } from '@supabase/supabase-js';
 // Admin session cookie ka naam (customer ke 'sb-auth' se alag)
 const ADMIN_COOKIE = 'saancha-admin';
 
-// Simple signed token: hash of the password + a fixed salt. Cookie me yeh store hota hai.
-function tokenFor(pwd) {
-  // lightweight hash (not for passwords in DB — sirf cookie match ke liye)
-  let h = 0; const s = pwd + '::saancha-admin-v1';
-  for (let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) | 0; }
-  return 'a' + (h >>> 0).toString(36);
-}
-
-export function adminPassword() {
-  return import.meta.env.ADMIN_PASSWORD || '';
-}
-
+// HMAC-SHA256 signed, time-limited administrator cookie. Requires Node runtime.
+import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
+const SESSION_SECONDS = 60 * 60 * 8;
+export function adminPassword() { return import.meta.env.ADMIN_PASSWORD || ''; }
+function secret() { return import.meta.env.ADMIN_SESSION_SECRET || ''; }
+function signature(payload) { return createHmac('sha256', secret()).update(payload).digest('hex'); }
 export function isAdmin(cookies) {
-  const pwd = adminPassword();
-  if (!pwd) return false;
-  return cookies.get(ADMIN_COOKIE)?.value === tokenFor(pwd);
+  if (!adminPassword() || !secret()) return false;
+  const token = cookies.get(ADMIN_COOKIE)?.value || '';
+  const [expiry, nonce, mac, extra] = token.split('.');
+  if (extra !== undefined || !/^\d+$/.test(expiry || '') || !/^[a-f0-9]{32}$/.test(nonce || '') || !/^[a-f0-9]{64}$/.test(mac || '') || Number(expiry) <= Date.now()) return false;
+  const expected = signature(`${expiry}.${nonce}`);
+  return timingSafeEqual(Buffer.from(mac,'hex'), Buffer.from(expected,'hex'));
 }
-
 export function setAdminCookie(cookies) {
-  cookies.set(ADMIN_COOKIE, tokenFor(adminPassword()), {
-    path:'/', httpOnly:true, sameSite:'lax', secure:true, maxAge:60*60*8, // 8 hours
+  if (!secret() || !adminPassword()) throw new Error('Configure ADMIN_PASSWORD and ADMIN_SESSION_SECRET');
+  const expiry = String(Date.now() + SESSION_SECONDS * 1000);
+  const nonce = randomBytes(16).toString('hex');
+  cookies.set(ADMIN_COOKIE, `${expiry}.${nonce}.${signature(`${expiry}.${nonce}`)}`, {
+    path:'/', httpOnly:true, sameSite:'strict', secure: import.meta.env.PROD, maxAge:SESSION_SECONDS,
   });
 }
-export function clearAdminCookie(cookies) {
-  cookies.delete(ADMIN_COOKIE, { path:'/' });
-}
+export function clearAdminCookie(cookies) { cookies.delete(ADMIN_COOKIE, {path:'/'}); }
 
 // Service-role client — RLS bypass, SIRF server pe. Never expose this key to browser.
 export function supabaseAdmin() {

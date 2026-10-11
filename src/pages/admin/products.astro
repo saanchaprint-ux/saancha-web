@@ -1,0 +1,46 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+const sb = supabaseAdmin();
+let notice = '';
+const str=(f,k)=>String(f.get(k)||'').trim();
+const categories=['candles','soap','concrete','resin'];
+if (Astro.request.method==='POST') {
+ const f=await Astro.request.formData(); const action=str(f,'action'); const id=str(f,'id');
+ if (action==='save') {
+  const row={name:str(f,'name'),slug:str(f,'slug').toLowerCase(),category:str(f,'category'),base_sku:str(f,'base_sku').toUpperCase(),description:str(f,'description'),image_url:str(f,'image_url'),price:Number(str(f,'price')||0),stock:Number(str(f,'stock')||0),status:str(f,'status'),sort:Number(str(f,'sort')||100),updated_at:new Date().toISOString()};
+  if (!row.name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.slug) || !/^[A-Z0-9_-]+$/.test(row.base_sku) || !categories.includes(row.category) || !['draft','published','archived'].includes(row.status) || !Number.isInteger(row.stock) || row.stock<0 || !Number.isFinite(row.price) || row.price<0) notice='Error: Invalid product fields.';
+  else { if(id) { const {data:old}=await sb.from('cms_products').select('*').eq('id',id).single(); if(old) await sb.from('cms_revisions').insert({entity:'product',entity_id:id,snapshot:old}); }
+   const {error}=id ? await sb.from('cms_products').update(row).eq('id',id) : await sb.from('cms_products').insert(row);
+   notice=error?'Error: '+error.message:'Product saved.'; }
+ }
+ if (action==='delete' && id) { const {error}=await sb.from('cms_products').delete().eq('id',id);notice=error?'Error: '+error.message:'Product deleted.'; }
+ if(action==='variant' && id){const row={product_id:id,label:str(f,'label'),sku:str(f,'sku').toUpperCase(),price:Number(str(f,'price')),stock:Number(str(f,'stock'))};
+  if(!row.label || !/^[A-Z0-9_-]+$/.test(row.sku) || !Number.isFinite(row.price) || row.price<0 || !Number.isInteger(row.stock) || row.stock<0) notice='Error: Invalid variant.';
+  else {const {error}=await sb.from('cms_product_variants').insert(row);notice=error?'Error: '+error.message:'Variant added.';}}
+ if(action==='delete-variant' && id){const {error}=await sb.from('cms_product_variants').delete().eq('id',id);notice=error?'Error: '+error.message:'Variant deleted.';}
+}
+const {data:products,error:loadError}=await sb.from('cms_products').select('*').order('sort').order('created_at',{ascending:false});
+const {data:variants}=await sb.from('cms_product_variants').select('*').order('created_at');
+const edit=(products||[]).find(p=>p.id===Astro.url.searchParams.get('edit'));
+---
+<Base title="Product manager — Saancha Studio"><main class="admin"><div class="wrap">
+ <div class="admin-head"><div><span class="kicker">Saancha Studio</span><h1>Products & SKUs</h1></div><a class="btn ghost" href="/admin">Dashboard</a></div>
+ <nav class="admin-nav"><a href="/admin">Orders</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a><a href="/admin/products" class="on">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a></nav>
+ {loadError && <p class="err">Database upgrade required: {loadError.message}. Run db/cms-upgrade.sql.</p>}
+ {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
+ <section class="admin-card"><h2>{edit?'Edit product':'Add product'}</h2><form method="POST" class="admin-form">
+ <input type="hidden" name="action" value="save"/><input type="hidden" name="id" value={edit?.id||''}/>
+ <div class="ag"><label>Name<input name="name" required value={edit?.name||''}/></label><label>Slug<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={edit?.slug||''}/></label></div>
+ <div class="ag"><label>Category<select name="category">{categories.map(x=><option selected={edit?.category===x} value={x}>{x}</option>)}</select></label><label>Primary SKU<input name="base_sku" required value={edit?.base_sku||''}/></label></div>
+ <label>Description<textarea name="description" rows="3">{edit?.description||''}</textarea></label><label>Image URL (copy from Media library)<input type="url" name="image_url" value={edit?.image_url||''}/></label>
+ {edit?.image_url && <img src={edit.image_url} alt="Preview" style="width:130px;max-height:130px;object-fit:cover"/>}
+ <div class="ag"><label>Price (₹)<input type="number" min="0" step="0.01" name="price" required value={edit?.price??0}/></label><label>Stock<input type="number" min="0" step="1" name="stock" required value={edit?.stock??0}/></label><label>Sort<input type="number" name="sort" value={edit?.sort??100}/></label></div>
+ <label>Status<select name="status">{['draft','published','archived'].map(x=><option value={x} selected={(edit?.status||'draft')===x}>{x}</option>)}</select></label>
+ <button class="btn">{edit?'Save changes':'Create product'}</button>{edit && <a class="mini-btn" href="/admin/products">Cancel edit</a>}
+ </form></section>
+ <section class="admin-card"><h2>Catalog ({products?.length||0})</h2>{(products||[]).map(p=><div class="blk-item"><div><b>{p.name}</b><span>{p.base_sku} · {p.category} · ₹{p.price} · Stock {p.stock} · {p.status}</span></div><div class="blk-item-actions"><a class="mini-btn" href={`/admin/products?edit=${p.id}`}>Edit</a><form method="POST" onsubmit="return confirm('Delete product and its variants?')"><input type="hidden" name="action" value="delete"/><input type="hidden" name="id" value={p.id}/><button class="mini-btn danger">Delete</button></form></div></div>)}</section>
+ {edit && <section class="admin-card"><h2>Variants for {edit.name}</h2>{(variants||[]).filter(v=>v.product_id===edit.id).map(v=><div class="blk-item"><div><b>{v.label}</b><span>{v.sku} · ₹{v.price} · Stock {v.stock}</span></div><form method="POST" onsubmit="return confirm('Delete variant?')"><input type="hidden" name="action" value="delete-variant"/><input type="hidden" name="id" value={v.id}/><button class="mini-btn danger">Delete</button></form></div>)}<form class="admin-form" method="POST"><input type="hidden" name="action" value="variant"/><input type="hidden" name="id" value={edit.id}/><div class="ag"><label>Variant label<input name="label" required placeholder="Large / Blue"/></label><label>SKU<input name="sku" required/></label><label>Price<input name="price" type="number" min="0" step=".01" required/></label><label>Stock<input name="stock" type="number" min="0" value="0" required/></label></div><button class="btn">Add variant</button></form></section>}
+ </div></main></Base>

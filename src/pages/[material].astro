@@ -6,6 +6,7 @@ import Blocks from '../components/Blocks.astro';
 import { site } from '../data/site.js';
 import { materialsContent } from '../data/materials-content.js';
 import { loadContent, c as cc } from '../lib/content.js';
+import { supabaseAuth } from '../lib/supabase.js';
 
 export function getStaticPaths() {
   return Object.keys(materialsContent).map(slug => ({ params: { material: slug } }));
@@ -16,6 +17,9 @@ const c = materialsContent[material];
 const content = await loadContent();
 const heroText = cc(content, `${material}_hero`, c.hero);
 const ledeText = cc(content, `${material}_lede`, c.lede);
+let managedProducts = null;
+try { const {data,error}=await supabaseAuth().from('cms_products').select('*').eq('category',material).eq('status','published').order('sort'); if(!error && data?.length) managedProducts=data.map(p=>({name:p.name,meta:p.description,price:`₹${Number(p.price).toLocaleString('en-IN')}`,img:p.image_url||c.heroPoster,sku:p.base_sku,stock:p.stock})); } catch(e) { /* Keep original catalog if CMS is unavailable */ }
+const displayedProducts = managedProducts ?? c.products;
 const wa = site.whatsapp;
 const slug = material;
 
@@ -91,14 +95,14 @@ const customSlug = c.label.toLowerCase().replace(/ & /g,'-').replace(/ /g,'-');
         <p class="lede">Fixed prices, ready to ship. Every design here started as a custom job — and can be adapted to yours.</p>
       </div>
       <div class="pgrid">
-        {c.products.map(p => (
+        {displayedProducts.map(p => (
           <article class="pcard">
             <div class="shot"><span class="tag2">In stock</span><img src={p.img} alt={`${p.name} ${c.label} mold`} loading="lazy" /></div>
             <div class="b">
               <h3>{p.name}</h3><span class="meta">{p.meta}</span>
               <div class="row">
                 <span class="price">{p.price}<small>Fixed · ready-made</small></span>
-                <a class="enq" href={`https://wa.me/${wa}?text=${encodeURIComponent(`Hi, I'm interested in the ${p.name} (${c.label}) ready-made mold.`)}`} target="_blank" rel="noopener">Order &rarr;</a>
+                <a class="enq" href={`https://wa.me/${wa}?text=${encodeURIComponent(`Hi, I'm interested in the ${p.name}${p.sku ? ` (SKU: ${p.sku})` : ``} (${c.label}) ready-made mold.`)}`} target="_blank" rel="noopener">Order &rarr;</a>
               </div>
             </div>
           </article>

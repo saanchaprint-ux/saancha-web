@@ -1,0 +1,18 @@
+---
+export const prerender=false;
+import Base from '../../layouts/Base.astro';
+import {isAdmin,supabaseAdmin} from '../../lib/admin.js';
+if(!isAdmin(Astro.cookies))return Astro.redirect('/admin/login');
+const sb=supabaseAdmin();let notice='';
+if(Astro.request.method==='POST'){
+ const f=await Astro.request.formData();const action=String(f.get('action')||'');
+ if(action==='save'){const key=String(f.get('key')||'');if(!['navigation','global'].includes(key))notice='Invalid setting';else{
+ let value;try{value=JSON.parse(String(f.get('json')||''));if(key==='navigation' && (!Array.isArray(value)||value.some(x=>typeof x.label!=='string'||typeof x.href!=='string'||!x.href.startsWith('/'))))throw Error('Navigation must be an array of label/href internal links');if(key==='global' && (typeof value!=='object'||Array.isArray(value)||value===null))throw Error('Global settings must be an object');}catch(e){notice='Error: '+e.message;}
+ if(value && !notice){const {data:old}=await sb.from('cms_settings').select('*').eq('key',key).maybeSingle();if(old)await sb.from('cms_revisions').insert({entity:'setting',entity_id:key,snapshot:old});const {error}=await sb.from('cms_settings').upsert({key,value,updated_at:new Date().toISOString()});notice=error?'Error: '+error.message:'Settings saved.';}}
+ }}
+const {data,error}=await sb.from('cms_settings').select('*');const settings=Object.fromEntries((data||[]).map(x=>[x.key,x.value]));
+const defaults={navigation:[{label:'Process',href:'/#process'},{label:'Options',href:'/#tiers'}],global:{}};
+---
+<Base title="Site settings — Saancha Studio"><main class="admin"><div class="wrap"><div class="admin-head"><div><span class="kicker">Saancha Studio</span><h1>Site settings</h1></div><a href="/admin" class="btn ghost">Dashboard</a></div><nav class="admin-nav"><a href="/admin">Orders</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a><a href="/admin/products">Products</a><a href="/admin/media">Media</a><a class="on" href="/admin/settings">Settings</a></nav>{error && <p class="err">Run db/cms-upgrade.sql: {error.message}</p>}{notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
+ {Object.entries(defaults).map(([key,fallback])=><section class="admin-card"><h2>{key}</h2><p class="pricenote">Structured configuration. Existing site layout stays unchanged.</p><form method="POST" class="admin-form"><input type="hidden" name="action" value="save"/><input type="hidden" name="key" value={key}/><label>JSON<textarea name="json" rows="9" style="font-family:monospace">{JSON.stringify(settings[key]||fallback,null,2)}</textarea></label><button class="btn">Save {key}</button></form></section>)}
+ </div></main></Base>

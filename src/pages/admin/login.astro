@@ -7,7 +7,7 @@ let error = '';
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const pwd = form.get('password')?.toString() || '';
-  if (!adminPassword()) error = 'Admin password not configured on server.';
+  if (!adminPassword() || !import.meta.env.ADMIN_SESSION_SECRET) error = 'Admin password not configured on server.';
   else if (pwd === adminPassword()) {
     setAdminCookie(Astro.cookies);
     return Astro.redirect('/admin');
