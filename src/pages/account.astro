@@ -4,44 +4,87 @@ import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { getUser, supabaseServer } from '../lib/supabase.js';
+import { site } from '../data/site.js';
 
 const user = await getUser(Astro.cookies);
 if (!user) return Astro.redirect('/login');
-
 const sb = supabaseServer(Astro.cookies);
+const wa = site.whatsapp;
+
+let notice = '';
+// ── actions (addresses, profile) ──
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const action = f.get('action')?.toString();
+
+  if (action === 'profile') {
+    const { error } = await sb.from('profiles').update({
+      full_name: f.get('full_name')?.toString().trim(),
+      brand: f.get('brand')?.toString().trim() || null,
+      phone: f.get('phone')?.toString().trim() || null,
+    }).eq('id', user.id);
+    notice = error ? 'Error: '+error.message : 'Profile updated.';
+  }
+  if (action === 'addr-add') {
+    const row = {
+      user_id: user.id,
+      label: f.get('label')?.toString().trim() || 'Address',
+      line1: f.get('line1')?.toString().trim(),
+      line2: f.get('line2')?.toString().trim() || null,
+      city: f.get('city')?.toString().trim() || null,
+      state: f.get('state')?.toString().trim() || null,
+      pincode: f.get('pincode')?.toString().trim() || null,
+      phone: f.get('phone')?.toString().trim() || null,
+    };
+    const { error } = await sb.from('addresses').insert(row);
+    notice = error ? 'Error: '+error.message : 'Address added.';
+  }
+  if (action === 'addr-del') {
+    const { error } = await sb.from('addresses').delete().eq('id', f.get('id')?.toString()).eq('user_id', user.id);
+    notice = error ? 'Error: '+error.message : 'Address removed.';
+  }
+  if (action === 'addr-default') {
+    await sb.from('addresses').update({ is_default:false }).eq('user_id', user.id);
+    const { error } = await sb.from('addresses').update({ is_default:true }).eq('id', f.get('id')?.toString()).eq('user_id', user.id);
+    notice = error ? 'Error: '+error.message : 'Default address set.';
+  }
+}
+
+// ── load data ──
 const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
-const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-const { data: quotes } = await sb.from('quote_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-const qlist = quotes || [];
-const qStatusColor = { 'submitted':'#E6A15C','under-review':'#E6A15C','quote-ready':'#5FD189','approved':'#5FD189','in-production':'#8FA98C','completed':'#5FD189' };
+const { data: orders } = await sb.from('orders').select('*').eq('user_id', user.id).order('created_at',{ascending:false});
+const { data: quotes } = await sb.from('quote_requests').select('*').eq('user_id', user.id).order('created_at',{ascending:false});
+const { data: addresses } = await sb.from('addresses').select('*').eq('user_id', user.id).order('is_default',{ascending:false});
 
 const name = profile?.full_name || user.email;
-const list = orders || [];
-const wa = '918800559984';
-const statusColor = { pending:'#E6A15C','in-production':'#8FA98C', shipped:'#5FD189', delivered:'#5FD189' };
+const list = orders || [], qlist = quotes || [], alist = addresses || [];
+const oStatusColor = { pending:'#E6A15C','in-production':'#8FA98C', shipped:'#5FD189', delivered:'#5FD189' };
+const qStatusColor = { 'submitted':'#E6A15C','under-review':'#E6A15C','quote-ready':'#5FD189','approved':'#5FD189','in-production':'#8FA98C','completed':'#5FD189' };
 ---
-<Base title="My account — Saancha" description="Your Saancha orders.">
+<Base title="My account — Saancha" description="Your Saancha account.">
   <Nav slot="nav" />
-  <main class="account">
+  <main class="account acct2">
     <div class="wrap">
       <div class="acc-head">
-        <div>
-          <span class="kicker">My account</span>
-          <h1>Hello, {name}.</h1>
-          <p class="sub">{user.email}</p>
-        </div>
+        <div><span class="kicker">My account</span><h1>Hello, {name}.</h1><p class="sub">{user.email}</p></div>
         <a href="/logout" class="btn ghost">Log out</a>
       </div>
 
-      <div class="acc-orders">
-        <div class="acc-bar"><h2>Your orders</h2><a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20to%20place%20an%20order`} target="_blank" rel="noopener" class="btn">New order on WhatsApp</a></div>
+      {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
 
-        {list.length === 0 ? (
-          <div class="empty">
-            <p>No orders yet.</p>
-            <p class="sub">Once you place an order, it'll show up here with its status.</p>
-            <a href="/#materials" class="btn ghost">Browse molds</a>
-          </div>
+      <!-- tabs -->
+      <nav class="acct-tabs">
+        <button class="at on" data-tab="orders">Orders</button>
+        <button class="at" data-tab="requests">Custom requests</button>
+        <button class="at" data-tab="addresses">Addresses</button>
+        <button class="at" data-tab="profile">Profile</button>
+      </nav>
+
+      <!-- ORDERS -->
+      <section class="acct-panel" data-panel="orders">
+        <div class="acc-bar"><h2>Your orders</h2><a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20to%20place%20an%20order`} target="_blank" rel="noopener" class="btn">New order on WhatsApp</a></div>
+        {list.length===0 ? (
+          <div class="empty"><p>No orders yet.</p><p class="sub">Once you place an order, it'll show up here with its status.</p><a href="/#materials" class="btn ghost">Browse molds</a></div>
         ) : (
           <div class="otable">
             {list.map(o => (
@@ -49,37 +92,96 @@ const statusColor = { pending:'#E6A15C','in-production':'#8FA98C', shipped:'#5FD
                 <div class="ocol"><span class="mono">Order</span><b>{o.order_no || o.id.slice(0,8)}</b></div>
                 <div class="ocol"><span class="mono">Item</span><b>{o.item}</b><span class="meta">{o.material} · qty {o.quantity}</span></div>
                 <div class="ocol"><span class="mono">Amount</span><b>{o.amount ? '₹'+o.amount : '—'}</b></div>
-                <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${statusColor[o.status]||'#E6A15C'};border-color:${statusColor[o.status]||'#E6A15C'}`}>{o.status}</span></div>
+                <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${oStatusColor[o.status]||'#E6A15C'};border-color:${oStatusColor[o.status]||'#E6A15C'}`}>{o.status}</span></div>
                 <div class="ocol"><a class="reorder" href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi, I want to reorder: '+o.item)}`} target="_blank" rel="noopener">Reorder →</a></div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
 
-      <div class="acc-orders" id="requests" style="margin-top:50px">
+      <!-- REQUESTS -->
+      <section class="acct-panel" data-panel="requests" hidden>
         <div class="acc-bar"><h2>Custom mould requests</h2><a href="/custom-moulds" class="btn ghost">New custom request</a></div>
-        {qlist.length === 0 ? (
-          <div class="empty">
-            <p>No custom requests yet.</p>
-            <p class="sub">Use the calculator on the Custom Moulds page to get an estimate and request a quote.</p>
-            <a href="/custom-moulds" class="btn ghost">Custom Moulds</a>
-          </div>
+        {qlist.length===0 ? (
+          <div class="empty"><p>No custom requests yet.</p><p class="sub">Use the calculator on the Custom Moulds page to request a quote.</p><a href="/custom-moulds" class="btn ghost">Custom Moulds</a></div>
         ) : (
           <div class="otable">
             {qlist.map(q => (
               <div class="orow">
                 <div class="ocol"><span class="mono">Request</span><b>{q.id.slice(0,8)}</b></div>
-                <div class="ocol"><span class="mono">Specs</span><b>{q.product || '—'}</b><span class="meta">{[q.size,q.complexity,(q.logo?'logo':''),q.quantity].filter(Boolean).join(' · ')}</span></div>
-                <div class="ocol"><span class="mono">Estimate</span><b>{q.estimate || '—'}</b></div>
+                <div class="ocol"><span class="mono">Specs</span><b>{q.product||'—'}</b><span class="meta">{[q.size,q.complexity,(q.logo?'logo':''),q.quantity].filter(Boolean).join(' · ')}</span></div>
+                <div class="ocol"><span class="mono">Estimate</span><b>{q.estimate||'—'}</b></div>
                 <div class="ocol"><span class="mono">Status</span><span class="badge" style={`color:${qStatusColor[q.status]||'#E6A15C'};border-color:${qStatusColor[q.status]||'#E6A15C'}`}>{q.status}</span></div>
                 <div class="ocol"><span class="mono">Date</span><span class="meta">{new Date(q.created_at).toLocaleDateString('en-IN')}</span></div>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
+
+      <!-- ADDRESSES -->
+      <section class="acct-panel" data-panel="addresses" hidden>
+        <div class="acc-bar"><h2>Saved addresses</h2></div>
+        {alist.length>0 && (
+          <div class="addr-grid">
+            {alist.map(a => (
+              <div class={`addr-card${a.is_default?' is-default':''}`}>
+                {a.is_default && <span class="addr-tag">Default</span>}
+                <b>{a.label}</b>
+                <p>{[a.line1,a.line2,a.city,a.state,a.pincode].filter(Boolean).join(', ')}</p>
+                {a.phone && <p class="meta">{a.phone}</p>}
+                <div class="addr-actions">
+                  {!a.is_default && <form method="POST"><input type="hidden" name="action" value="addr-default"><input type="hidden" name="id" value={a.id}><button class="mini-btn">Set default</button></form>}
+                  <form method="POST" onsubmit="return confirm('Remove this address?')"><input type="hidden" name="action" value="addr-del"><input type="hidden" name="id" value={a.id}><button class="mini-btn danger">Remove</button></form>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div class="admin-card" style="margin-top:20px;max-width:600px">
+          <h2>Add an address</h2>
+          <form method="POST" class="admin-form">
+            <input type="hidden" name="action" value="addr-add">
+            <div class="ag"><label>Label<input name="label" placeholder="Home / Work"></label><label>Phone<input name="phone"></label></div>
+            <label>Address line 1<input name="line1" required></label>
+            <label>Address line 2<input name="line2"></label>
+            <div class="ag"><label>City<input name="city"></label><label>State<input name="state"></label><label>Pincode<input name="pincode"></label></div>
+            <button class="btn" type="submit">Add address</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="acct-panel" data-panel="profile" hidden>
+        <div class="acc-bar"><h2>Profile</h2></div>
+        <div class="admin-card" style="max-width:600px">
+          <form method="POST" class="admin-form">
+            <input type="hidden" name="action" value="profile">
+            <label>Full name<input name="full_name" value={profile?.full_name||''} required></label>
+            <label>Brand / business<input name="brand" value={profile?.brand||''}></label>
+            <label>Phone<input name="phone" value={profile?.phone||''}></label>
+            <label>Email<input value={user.email} disabled style="opacity:.6"></label>
+            <button class="btn" type="submit">Save profile</button>
+          </form>
+          <p class="pricenote">Password badalna hai? <a href="/forgot" style="color:var(--amber)">Reset it here</a>.</p>
+        </div>
+      </section>
     </div>
   </main>
   <Footer slot="footer" />
+
+  <script is:inline>
+    (function(){
+      const tabs = document.querySelectorAll('.at');
+      const panels = document.querySelectorAll('.acct-panel');
+      function show(name){
+        tabs.forEach(t=>t.classList.toggle('on', t.dataset.tab===name));
+        panels.forEach(p=>p.hidden = p.dataset.panel!==name);
+        history.replaceState(null,'','#'+name);
+      }
+      tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.tab)));
+      const h=location.hash.replace('#',''); if(h && document.querySelector(`.at[data-tab="${h}"]`)) show(h);
+    })();
+  </script>
 </Base>

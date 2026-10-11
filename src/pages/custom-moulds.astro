@@ -137,9 +137,7 @@ if (Astro.request.method === 'POST') {
           </div>
         </div>
 
-        <button type="button" class="btn calc-go" id="calcGo" data-mag>Calculate estimate</button>
-
-        <!-- Result -->
+        <!-- Result (updates live as you pick) -->
         <div class="calc-result" id="calcResult" hidden>
           <div class="cr-head">Your estimated custom mould cost</div>
           <div class="cr-summary" id="crSummary"></div>
@@ -147,9 +145,10 @@ if (Astro.request.method === 'POST') {
           <p class="cr-note">This is an approximate estimate. Final pricing will be confirmed after reviewing your design and production requirements.</p>
           <div class="cr-cta">
             <a href="#quote" class="btn" id="crQuote" data-mag>Request final quote</a>
-            <button type="button" class="btn ghost" id="crReset" data-mag>Modify selection</button>
+            <button type="button" class="btn ghost" id="crReset" data-mag>Reset</button>
           </div>
         </div>
+        <p class="calc-hint" id="calcHint">Pick product, size, design and quantity above to see your estimate.</p>
       </div>
     </div>
   </section>

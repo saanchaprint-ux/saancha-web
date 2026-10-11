@@ -203,7 +203,7 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
   });
 })();
 
-/* ── Custom Mould Pricing Calculator ── */
+/* ── Custom Mould Pricing Calculator (real-time) ── */
 (function(){
   const calc = document.getElementById('calc');
   if (!calc) return;
@@ -211,8 +211,13 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
   try { rules = JSON.parse(calc.dataset.rules || 'null'); } catch(e){ rules = null; }
 
   const sel = { product:null, size:null, complexity:null, quantity:null, logo:false };
+  const result = document.getElementById('calcResult');
+  const hint = document.getElementById('calcHint');
+  const sum = document.getElementById('crSummary');
+  const tot = document.getElementById('crTotal');
+  const fmt = (n)=> (rules?.currency||'₹') + Math.round(n).toLocaleString('en-IN');
 
-  // option buttons
+  // option buttons → update + recalc live
   calc.querySelectorAll('.opt-grid').forEach(grid=>{
     const group = grid.dataset.group;
     grid.querySelectorAll('.opt').forEach(btn=>{
@@ -222,78 +227,65 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
         sel[group] = btn.dataset.val;
         if (group==='size') document.getElementById('customDims').hidden = (btn.dataset.val!=='custom');
         if (group==='quantity') document.getElementById('customQty').hidden = (btn.dataset.val!=='custom');
+        recalc();
       });
     });
   });
   const logoCheck = document.getElementById('logoCheck');
-  if (logoCheck) logoCheck.addEventListener('change', ()=> sel.logo = logoCheck.checked);
+  if (logoCheck) logoCheck.addEventListener('change', ()=>{ sel.logo = logoCheck.checked; recalc(); });
+  const dimsEl = document.getElementById('dims');
+  const qtyNumEl = document.getElementById('qtyNum');
+  if (dimsEl) dimsEl.addEventListener('input', recalc);
+  if (qtyNumEl) qtyNumEl.addEventListener('input', recalc);
 
-  const fmt = (n)=> (rules?.currency||'₹') + Math.round(n).toLocaleString('en-IN');
+  function qtyVal(){
+    let q = sel.quantity;
+    if (q==='custom') q = parseInt(qtyNumEl?.value||'0');
+    else if (q==='10') q = Math.max(10, parseInt(qtyNumEl?.value||'10')||10);
+    return Math.max(1, parseInt(q)||1);
+  }
 
-  document.getElementById('calcGo').addEventListener('click', ()=>{
-    const res = document.getElementById('calcResult');
-    const sum = document.getElementById('crSummary');
-    const tot = document.getElementById('crTotal');
-
-    // validation
+  function recalc(){
+    // need all four picks
     if (!sel.product || !sel.size || !sel.complexity || !sel.quantity){
-      res.hidden = false;
-      sum.innerHTML = '<p class="cr-warn">Please select product, size, design and quantity.</p>';
-      tot.textContent = '';
-      res.scrollIntoView({behavior:'smooth', block:'nearest'});
-      return;
+      result.hidden = true; if(hint) hint.hidden = false; return;
     }
+    if(hint) hint.hidden = true;
+    result.hidden = false;
 
-    // custom quantity value
-    let qty = sel.quantity;
-    if (qty==='custom'){ qty = parseInt(document.getElementById('qtyNum').value||'0'); }
-    else if (qty==='10'){ qty = parseInt(document.getElementById('qtyNum')?.value||'10') || 10; }
-    qty = Math.max(1, parseInt(qty)||1);
+    const qty = qtyVal();
+    const dims = dimsEl?.value || '';
 
-    const dims = document.getElementById('dims')?.value || '';
-
-    // CUSTOM QUOTE cases: multipart design OR custom size → no auto price
-    const needsQuote = (sel.complexity==='multipart') || (sel.size==='custom') || !rules;
-    const rowsHtml = `
+    // customer-facing summary (NO internal breakdown)
+    const summaryHtml = `
       <div class="cr-row"><span>Product</span><b>${sel.product}</b></div>
       <div class="cr-row"><span>Size</span><b>${sel.size==='custom' ? (dims||'custom') : sel.size+'″'}</b></div>
       <div class="cr-row"><span>Design</span><b>${sel.complexity}${sel.logo?' + logo':''}</b></div>
       <div class="cr-row"><span>Quantity</span><b>${qty}</b></div>`;
 
+    // custom quote cases
+    const needsQuote = (sel.complexity==='multipart') || (sel.size==='custom') || !rules;
     if (needsQuote){
-      sum.innerHTML = rowsHtml;
-      tot.innerHTML = '<span class="cr-quote">Custom Quote Required</span><p class="cr-note" style="margin-top:8px">Multipart / custom-size moulds are priced after a quick design review.</p>';
+      sum.innerHTML = summaryHtml;
+      tot.innerHTML = '<span class="cr-quote">Custom Quote Required</span>';
       prefill(qty, dims, 'Custom quote required');
-      res.hidden = false; res.scrollIntoView({behavior:'smooth', block:'nearest'});
       return;
     }
 
-    // ── price math ──
-    // Design/print = ONE-TIME (master banta hai ek baar). Logo yahan.
-    // Per-mould = base × size. Quantity sirf mould cost pe. Bulk discount mould pe.
+    // math (hidden from customer)
     const designBase = (rules.designBase && rules.designBase[sel.complexity]) || 0;
     const logo = sel.logo ? (rules.logoCharge||0) : 0;
-    const designCharge = designBase + logo;          // one-time
-
-    const base = rules.base[sel.product] || 0;
-    const sizeMult = rules.sizeMult[sel.size] || 1;
-    const perMould = base * sizeMult;                 // per unit
-
+    const designCharge = designBase + logo;
+    const perMould = (rules.base[sel.product]||0) * (rules.sizeMult[sel.size]||1);
     const tier = (rules.qtyTiers||[]).slice().reverse().find(t=> qty>=t.min) || {mult:1};
-    const mouldTotal = perMould * qty * (tier.mult||1);
-    const total = designCharge + mouldTotal;
+    const total = designCharge + perMould*qty*(tier.mult||1);
 
-    sum.innerHTML = rowsHtml +
-      `<div class="cr-row"><span>Design &amp; setup (one-time)</span><b>${fmt(designCharge)}</b></div>` +
-      `<div class="cr-row"><span>Per mould (${sel.size}&Prime;)</span><b>${fmt(perMould)}</b></div>` +
-      `<div class="cr-row"><span>Moulds × ${qty}${tier.mult<1 ? ' · −'+Math.round((1-tier.mult)*100)+'%' : ''}</span><b>${fmt(mouldTotal)}</b></div>`;
+    sum.innerHTML = summaryHtml;   // only selections, no cost breakdown
     tot.innerHTML = `<span class="cr-total-label">Estimated total</span><span class="cr-total-val">${fmt(total)}</span>`;
     prefill(qty, dims, fmt(total)+' (est.)');
-    res.hidden = false; res.scrollIntoView({behavior:'smooth', block:'nearest'});
-  });
+  }
 
   function prefill(qty, dims, estimate){
-    const set=(id,v)=>{ const el=document.getElementById(id); if(el&&!el.value) el.value=v; };
     const setForce=(id,v)=>{ const el=document.getElementById(id); if(el) el.value=v; };
     setForce('q-product', sel.product||'');
     setForce('q-size', sel.size==='custom'?(dims||'custom'):(sel.size?sel.size+'"':''));
@@ -305,7 +297,7 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
   }
 
   document.getElementById('crReset').addEventListener('click', ()=>{
-    document.getElementById('calcResult').hidden = true;
+    result.hidden = true; if(hint) hint.hidden = false;
     calc.querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));
     document.getElementById('customDims').hidden = true;
     document.getElementById('customQty').hidden = true;
