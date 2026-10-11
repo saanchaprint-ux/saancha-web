@@ -6,7 +6,6 @@ import Footer from '../components/Footer.astro';
 import PromoTicker from '../components/PromoTicker.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Blocks from '../components/Blocks.astro';
-import ProductGrid from '../components/ProductGrid.astro';
 import { publishedProducts } from '../lib/catalog.js';
 import { site, asset, video } from '../data/site.js';
 import { loadContent, c } from '../lib/content.js';
@@ -21,12 +20,27 @@ const rangeVid = video("range.mp4", "hf_20260824_044007_8c4635fa-026f-48fd-a032-
 const defaultHeroPoster = asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png");
 
 const heroPoster = c(content,"home_hero_image",defaultHeroPoster);
-const mats = [
+const fallbackMats = [
   { slug:"candles",  n:"M/01", label:"Candles", desc:"Ribbed pillars, tapers, sculpted shapes. Wax releases clean from flexible silicone.", img: asset("candle.png","hf_20260905_141240_8c55a42f-ef7d-4c14-ab6a-265941b92d4f.png") },
   { slug:"soap",     n:"M/02", label:"Soap & bath", desc:"Faceted bars, embeds, layered pours. Crisp edges, every batch.", img: asset("soap.png","hf_20260905_141240_d85649fa-8c7e-4df4-a784-a745e6f621a8.png") },
   { slug:"concrete", n:"M/03", label:"Concrete", desc:"Planters, trays, homeware. Two-part molds handle undercuts and depth.", img: asset("concrete.png","hf_20260905_141240_875068c4-8347-45f0-9442-fd4e8a93c35f.png") },
   { slug:"resin",    n:"M/04", label:"Resin", desc:"Art objects, coasters, jewellery. High-detail transfer for fine facets.", img: asset("resin.png","hf_20260905_141240_ec9d52eb-d3b8-4311-97e1-9617674d5ec4.png") },
 ];
+
+// Use the same existing four-card design for the latest published products.
+// Retain the original category cards only until the first product is published,
+// so a new/empty installation still has useful category navigation.
+const materialImages = Object.fromEntries(fallbackMats.map(m => [m.slug, m.img]));
+const mats = newestProducts.length ? newestProducts.map((p, i) => ({
+  slug: p.category,
+  n: `M/${String(i + 1).padStart(2, '0')}`,
+  label: p.name,
+  desc: p.description || `${p.category || 'Casting'} mould`,
+  img: p.image_url || materialImages[p.category] || fallbackMats[0].img,
+  sku: p.base_sku,
+  price: p.price,
+  product: true,
+})) : fallbackMats;
 
 const jsonld = {
   "@context":"https://schema.org","@type":"LocalBusiness","name":site.name,
@@ -96,36 +110,20 @@ const jsonld = {
   <section class="sec" id="materials">
     <div class="wrap">
       <div class="sec-head">
-        <span class="kicker rvu">03 — Materials</span>
-        <h2 class="rvu"><span class="ln"><span>One process.</span></span><span class="ln"><span><span class="serif-it">Anything</span> castable.</span></span></h2>
-        <p class="lede rvu">{c(content,"home_materials_lede","Tell us what you're pouring — we pick the material. Each range has its own ready-made molds, or we build custom around your product.")}</p>
+        <span class="kicker rvu">03 — Shop Moulds</span>
+        <h2 class="rvu"><span class="ln"><span>Shop our latest</span></span><span class="ln"><span><span class="serif-it">moulds.</span></span></span></h2>
+        <p class="lede rvu">{newestProducts.length ? 'Our four newest ready-made moulds. Browse the full collection in Shop Moulds.' : c(content,"home_materials_lede","Tell us what you're pouring — we pick the material. Each range has its own ready-made molds, or we build custom around your product.")}</p>
       </div>
       <div class="mats">
         {mats.map(m => (
-          <a class="mat rvu" href={`/${m.slug}`}>
-            <div class="fig"><span class="num">{m.n}</span><img src={m.img} alt={m.label} /></div>
-            <div class="body"><h3>{m.label}</h3><p>{m.desc}</p><span class="mat-cta mono">View ready molds &rarr;</span></div>
+          <a class="mat rvu" href={m.product ? `/shop?category=${encodeURIComponent(m.slug || 'all')}` : `/${m.slug}`}>
+            <div class="fig"><span class="num">{m.n}</span><img src={m.img} alt={m.label} loading="lazy" /></div>
+            <div class="body"><h3>{m.label}</h3><p>{m.desc}</p>{m.product && <p class="product-info mono">₹{Number(m.price || 0).toLocaleString('en-IN')}{m.sku && <span> · SKU: {m.sku}</span>}</p>}<span class="mat-cta mono">{m.product ? 'View in Shop Moulds →' : 'View ready molds →'}</span></div>
           </a>
         ))}
       </div>
-    </div>
-  </section>
-
-  <section class="sec" id="latest-moulds">
-    <div class="wrap">
-      <div class="sec-head">
-        <span class="kicker rvu">SHOP / LATEST ARRIVALS</span>
-        <h2 class="rvu">Latest <span class="serif-it">moulds.</span></h2>
-        <p class="lede rvu">The four newest moulds in our collection. See everything in Shop Moulds.</p>
-      </div>
-      {productsUnavailable ? (
-        <p class="lede">The latest products are temporarily unavailable. <a href="/shop">Browse Shop Moulds →</a></p>
-      ) : newestProducts.length > 0 ? (
-        <ProductGrid products={newestProducts} />
-      ) : (
-        <p class="lede">New moulds coming soon. <a href="/shop">Explore Shop Moulds →</a></p>
-      )}
-      <div class="latest-products-action"><a class="btn ghost" href="/shop">View all moulds →</a></div>
+      <div class="homepage-shop-action"><a href="/shop" class="btn ghost">View all moulds →</a></div>
+      {productsUnavailable && <p class="homepage-shop-notice">Shop inventory is temporarily unavailable. Category navigation is shown instead.</p>}
     </div>
   </section>
 
@@ -204,4 +202,4 @@ const jsonld = {
   <Footer slot="footer" />
 </Base>
 
-<style>.latest-products-action{margin-top:32px;display:flex;justify-content:center}</style>
+<style>.homepage-shop-action{margin-top:32px;display:flex;justify-content:center}.product-info{font-size:12px;line-height:1.6;color:var(--accent,#e7a45f);margin-top:12px}.product-info span{color:#aaa}.homepage-shop-notice{margin-top:14px;font-size:12px;color:#aaa}</style>
