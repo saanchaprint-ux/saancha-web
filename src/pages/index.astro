@@ -6,10 +6,13 @@ import Footer from '../components/Footer.astro';
 import PromoTicker from '../components/PromoTicker.astro';
 import Testimonials from '../components/Testimonials.astro';
 import Blocks from '../components/Blocks.astro';
+import ProductGrid from '../components/ProductGrid.astro';
+import { publishedProducts } from '../lib/catalog.js';
 import { site, asset, video } from '../data/site.js';
 import { loadContent, c } from '../lib/content.js';
 
 const content = await loadContent();
+const { products: newestProducts, error: productsUnavailable } = await publishedProducts(4);
 const wa = site.whatsapp;
 // hero + band videos (Seedance)
 const heroVid = video("mold-rotate.mp4", "hf_20260824_035050_fc4dfd89-cdb1-4a4e-b5ef-4bfa6d5378b7.mp4");
@@ -108,6 +111,24 @@ const jsonld = {
     </div>
   </section>
 
+  <section class="sec" id="latest-moulds">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker rvu">SHOP / LATEST ARRIVALS</span>
+        <h2 class="rvu">Latest <span class="serif-it">moulds.</span></h2>
+        <p class="lede rvu">The four newest moulds in our collection. See everything in Shop Moulds.</p>
+      </div>
+      {productsUnavailable ? (
+        <p class="lede">The latest products are temporarily unavailable. <a href="/shop">Browse Shop Moulds →</a></p>
+      ) : newestProducts.length > 0 ? (
+        <ProductGrid products={newestProducts} />
+      ) : (
+        <p class="lede">New moulds coming soon. <a href="/shop">Explore Shop Moulds →</a></p>
+      )}
+      <div class="latest-products-action"><a class="btn ghost" href="/shop">View all moulds →</a></div>
+    </div>
+  </section>
+
   <section class="scrub right" id="range">
     <div class="scrub-holder">
       <div class="scrub-media"><video class="autovid" muted playsinline autoplay loop preload="auto" poster={heroPoster}><source src={rangeVid} type="video/mp4" /></video></div>
@@ -182,3 +203,5 @@ const jsonld = {
 
   <Footer slot="footer" />
 </Base>
+
+<style>.latest-products-action{margin-top:32px;display:flex;justify-content:center}</style>

@@ -3,10 +3,10 @@ export const prerender = false;
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import {supabaseAdmin} from '../lib/admin.js';
+import {publishedProducts} from '../lib/catalog.js';
+import ProductGrid from '../components/ProductGrid.astro';
 import {site} from '../data/site.js';
-let products=[];let unavailable=false;
-try { const {data,error}=await supabaseAdmin().from('cms_products').select('id,name,slug,description,image_url,category,base_sku,price,stock,status,sort').eq('status','published').order('sort',{ascending:true}).order('name',{ascending:true}); if (error) {console.error('[shop] Failed loading catalog:',error.message);unavailable=true;} else products=data||[]; } catch(error) {console.error('[shop] Catalog failure:',error);unavailable=true;}
+const {products, error: unavailable} = await publishedProducts();
 const categories=['all','candles','soap','concrete','resin'];
 const active=categories.includes(Astro.url.searchParams.get('category'))?Astro.url.searchParams.get('category'):'all';
 const shown=active==='all'?products:products.filter(p=>p.category===active);
@@ -16,7 +16,7 @@ const wa=site.whatsapp;
 <Nav slot="nav"/>
 <header class="mpage-hero shop-hero"><div class="wrap"><div class="crumb mono"><a href="/">Home</a> / Shop</div><span class="kicker">SAANCHA / READY-MADE</span><h1>Shop moulds.</h1><p class="lede">Made for makers. Explore our available moulds, or ask us for a custom shape.</p></div></header>
 <main class="readymade" id="shop"><div class="wrap"><div class="grid-head"><span class="kicker">Shop / Catalog</span><h2>Ready to make.</h2><p class="lede">Explore the Saancha collection. Browse by casting material.</p><nav class="shop-filters" aria-label="Filter products">{categories.map(c=><a class={active===c?'chip on':'chip'} href={c==='all'?'/shop':'/shop?category='+c}>{c==='all'?'All products':c}</a>)}</nav></div>
-{unavailable?<p class="lede">Shop is temporarily unavailable. Please contact us for the current catalog.</p>:shown.length===0?<p class="lede">No products are available in this category yet. Browse other collections or request a custom mould.</p>:<div class="pgrid">{shown.map(p=><article class="pcard"><div class="shot">{p.image_url?<img src={p.image_url} alt={p.name} loading="lazy"/>:<div class="shop-placeholder">SAANCHA</div>}<span class="tag2">{p.stock>0?'In stock':'Enquire'}</span></div><div class="b"><h3>{p.name}</h3><span class="meta">{p.description}</span><span class="mono">{p.category} / SKU: {p.base_sku}</span><div class="row"><span class="price">₹{Number(p.price).toLocaleString('en-IN')}<small>Ready-made</small></span><a class="enq" href={`https://wa.me/${wa}?text=${encodeURIComponent('Hi, I want to enquire about '+p.name+' (SKU: '+p.base_sku+').')}`} target="_blank" rel="noopener">Enquire →</a></div></div></article>)}</div>}
+{unavailable?<p class="lede">Shop is temporarily unavailable. Please contact us for the current catalog.</p>:shown.length===0?<p class="lede">No products are available in this category yet. Browse other collections or request a custom mould.</p>:<ProductGrid products={shown} />}
 </div></main><Footer slot="footer"/>
 </Base>
 <style>.shop-hero{min-height:400px;background:#111}.shop-hero .wrap{padding-top:110px;padding-bottom:70px}.shop-filters{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}.shop-filters .chip{text-transform:capitalize;text-decoration:none}.shop-filters .on{background:var(--accent,#e7a45f);color:#151515}.shop-placeholder{display:grid;place-items:center;height:100%;min-height:230px;background:#1a1a1a;color:#dfa462;letter-spacing:.2em;font-size:14px}</style>
