@@ -21,7 +21,8 @@ const privatePath = /^\/(admin(?:\/|$)|api(?:\/|$)|account(?:\/|$)|login\/?$|log
 const robotsValue = robots ?? (privatePath ? 'noindex, nofollow, noarchive' : 'index, follow, max-image-preview:large');
 // These IDs belong to the owner and must be added in Vercel's environment settings.
 const gscVerification = import.meta.env.GOOGLE_SITE_VERIFICATION || '';
-const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID || '';
+// GA4 measurement IDs are public. Fallback ensures analytics also renders on static/pre-rendered pages.
+const gaMeasurementId = (import.meta.env.PUBLIC_GA_MEASUREMENT_ID || 'G-PMYYSHZM0B').trim();
 const fallbackOgImage = new URL('/logo.png', site.domain).href;
 const fullOgImage = ogImage ? new URL(ogImage, site.domain).href : fallbackOgImage;
 const safeJsonld = jsonld ? JSON.stringify(jsonld).replace(/</g,'\\u003c') : '';
@@ -55,12 +56,12 @@ const safeJsonld = jsonld ? JSON.stringify(jsonld).replace(/</g,'\\u003c') : '';
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   {jsonld && <script type="application/ld+json" set:html={safeJsonld} />}
   {gaMeasurementId && !privatePath && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`}></script>}
-  {gaMeasurementId && !privatePath && <script is:inline define:vars={{ gaMeasurementId }}>
+  {gaMeasurementId && !privatePath && <script is:inline set:html={`
     window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
+    function gtag(){window.dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', gaMeasurementId, { anonymize_ip: true });
-  </script>}
+    gtag('config', ${JSON.stringify(gaMeasurementId)});
+  `} />}
 </head>
 <body>
   <!-- logo mark (shared) -->
