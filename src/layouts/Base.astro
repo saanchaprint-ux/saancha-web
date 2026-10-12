@@ -7,6 +7,7 @@ const {
   description = `${site.name} designs and manufactures casting molds in Delhi — candles, soap, resin, concrete. No minimum order, 5–7 day turnaround.`,
   ogImage = '',
   jsonld = null,
+  robots = null,
 } = Astro.props;
 const studioPreview = Astro.url.searchParams.get('studio') === '1' && isAdmin(Astro.cookies);
 const cmsPage = Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/$/, '');
@@ -16,6 +17,15 @@ try {
  if(!error) visualEdits = (data||[]).map(row=>({selector:row.selector,property:row.property,value:studioPreview && row.draft_value!==null?row.draft_value:row.published_value})).filter(row=>row.value!==null);
 } catch {}
 const canonical = new URL(Astro.url.pathname, site.domain).href;
+const privatePath = /^\/(admin(?:\/|$)|api(?:\/|$)|account(?:\/|$)|login\/?$|logout\/?$|signup\/?$|forgot\/?$|reset\/?$)/.test(Astro.url.pathname);
+const robotsValue = robots ?? (privatePath ? 'noindex, nofollow, noarchive' : 'index, follow, max-image-preview:large');
+// These IDs belong to the owner and must be added in Vercel's environment settings.
+const gscVerification = import.meta.env.GOOGLE_SITE_VERIFICATION || '';
+const gaMeasurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID || '';
+const fallbackOgImage = new URL('/logo.png', site.domain).href;
+const fullOgImage = ogImage ? new URL(ogImage, site.domain).href : fallbackOgImage;
+const safeJsonld = jsonld ? JSON.stringify(jsonld).replace(/</g,'\\u003c') : '';
+
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -24,6 +34,8 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  <meta name="robots" content={robotsValue} />
+  {gscVerification && <meta name="google-site-verification" content={gscVerification} />}
   <link rel="canonical" href={canonical} />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -31,12 +43,24 @@ const canonical = new URL(Astro.url.pathname, site.domain).href;
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
-  {ogImage && <meta property="og:image" content={ogImage} />}
+  <meta property="og:image" content={fullOgImage} />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:locale" content="en_IN" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={fullOgImage} />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-  {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
+  {jsonld && <script type="application/ld+json" set:html={safeJsonld} />}
+  {gaMeasurementId && !privatePath && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`}></script>}
+  {gaMeasurementId && !privatePath && <script is:inline define:vars={{ gaMeasurementId }}>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', gaMeasurementId, { anonymize_ip: true });
+  </script>}
 </head>
 <body>
   <!-- logo mark (shared) -->

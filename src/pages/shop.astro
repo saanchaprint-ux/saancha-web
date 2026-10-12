@@ -12,7 +12,7 @@ const active=categories.includes(Astro.url.searchParams.get('category'))?Astro.u
 const shown=active==='all'?products:products.filter(p=>p.category===active);
 const wa=site.whatsapp;
 ---
-<Base title="Shop casting moulds | Saancha" description="Shop ready-made casting moulds for candles, soap, resin and concrete from Saancha.">
+<Base title="Shop Silicone Casting Moulds Online | Saancha" description="Browse ready-made silicone casting moulds for candles, soap, concrete and resin. Compare designs, sizes and prices, and enquire directly with Saancha.">
 <Nav slot="nav"/>
 <header class="mpage-hero shop-hero"><div class="wrap"><div class="crumb mono"><a href="/">Home</a> / Shop</div><span class="kicker">SAANCHA / READY-MADE</span><h1>Shop moulds.</h1><p class="lede">Made for makers. Explore our available moulds, or ask us for a custom shape.</p></div></header>
 <main class="readymade" id="shop"><div class="wrap"><div class="grid-head"><span class="kicker">Shop / Catalog</span><h2>Ready to make.</h2><p class="lede">Explore the Saancha collection. Browse by casting material.</p><nav class="shop-filters" aria-label="Filter products">{categories.map(c=><a class={active===c?'chip on':'chip'} href={c==='all'?'/shop':'/shop?category='+c}>{c==='all'?'All products':c}</a>)}</nav></div>
