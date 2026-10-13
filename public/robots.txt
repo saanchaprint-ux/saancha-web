@@ -9,4 +9,4 @@ Disallow: /forgot
 Disallow: /reset
 Disallow: /api/
 
-Sitemap: https://saancha.in/sitemap.xml
+Sitemap: https://www.saancha.in/sitemap.xml

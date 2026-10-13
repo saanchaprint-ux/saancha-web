@@ -10,7 +10,7 @@ export const site = {
   email: "saanchaprint@gmail.com",   // public contact — shown as written text
   whatsapp: "918800559984",          // used ONLY for WhatsApp links (not shown as number)
   city: "Delhi, India",
-  domain: "https://saancha.in",      // apna domain aane pe badlo
+  domain: "https://www.saancha.in",      // apna domain aane pe badlo
 };
 
 // CDN base — abhi Higgsfield se. Apni images public/images/ me daal ke

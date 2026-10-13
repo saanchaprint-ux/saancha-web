@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  site: 'https://saancha.in',
+  site: 'https://www.saancha.in',
   output: 'static',                 // static by default; SSR pages opt-in via prerender=false
   adapter: vercel(),
   security: {
