@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemap.org/schemas/sitemap/0.9">
-  <url><loc>https://saancha.in/</loc><priority>1.0</priority></url>
-  <url><loc>https://saancha.in/candles</loc><priority>0.8</priority></url>
-  <url><loc>https://saancha.in/soap</loc><priority>0.8</priority></url>
-  <url><loc>https://saancha.in/concrete</loc><priority>0.8</priority></url>
-  <url><loc>https://saancha.in/resin</loc><priority>0.8</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.saancha.in/</loc></url>
+  <url><loc>https://www.saancha.in/shop</loc></url>
+  <url><loc>https://www.saancha.in/custom-moulds</loc></url>
+  <url><loc>https://www.saancha.in/candles</loc></url>
+  <url><loc>https://www.saancha.in/soap</loc></url>
+  <url><loc>https://www.saancha.in/concrete</loc></url>
+  <url><loc>https://www.saancha.in/resin</loc></url>
 </urlset>
