@@ -136,7 +136,7 @@
 
 /* ── account dropdown: show login/signup vs my-account/orders/logout ── */
 (function(){
-  const loggedIn = document.cookie.split('; ').some(c => c.startsWith('sb-auth=1'));
+  const loggedIn = document.cookie.split('; ').some(c => c.trim() === 'sb-auth=1');
   document.querySelectorAll('.acc-in').forEach(el => el.hidden = !loggedIn);
   document.querySelectorAll('.acc-out').forEach(el => el.hidden = loggedIn);
   // mobile menu: swap the account entries too (if present)

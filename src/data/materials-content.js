@@ -29,16 +29,16 @@ const VID = {
 export const materialsContent = {
   candles: {
     label: "Candles",
-    seoTitle: "Candle Molds — Custom Silicone Candle Molds in Delhi | Saancha",
-    seoDesc: "Custom and ready-made silicone candle molds, made in Delhi. Pillars, tapers, fluted shapes. No minimum order, 5–7 day turnaround, fixed shelf prices.",
+    seoTitle: "Candle Moulds — Custom Silicone Candle Moulds in Delhi | Saancha",
+    seoDesc: "Custom and ready-made silicone candle moulds, made in Delhi. Pillars, tapers, fluted shapes. No minimum order, 5–7 day turnaround, fixed shelf prices.",
     heroVideo: video("candles-hero.mp4", VID.candleHero),
     heroPoster: asset("candle.png", IMG.candle),
-    hero: "Candle molds, cast to your shape.",
-    lede: "Ready-made silicone candle molds at fixed prices, or a custom mold built around your own design. Wax releases clean, every rib intact — pull after pull.",
+    hero: "Candle moulds, cast to your shape.",
+    lede: "Ready-made silicone candle moulds at fixed prices, or a custom mold built around your own design. Wax releases clean, every rib intact — pull after pull.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["100s","Pulls per mold"]],
     whyH: "Made for wax.",
     whyP: [
-      "Candle wax needs a mold that flexes — pour hot, let it set, then peel the silicone back without chipping a single flute. Rigid molds fight you; ours release clean, batch after batch.",
+      "Candle wax needs a mold that flexes — pour hot, let it set, then peel the silicone back without chipping a single flute. Rigid moulds fight you; ours release clean, batch after batch.",
       "Every ridge, taper and embossed mark on the master transfers exactly into the cavity, so the hundredth pour looks like the first."
     ],
     whyImg: asset("candle-trio.png", IMG.candleTrio),
@@ -63,12 +63,12 @@ export const materialsContent = {
 
   soap: {
     label: "Soap & bath",
-    seoTitle: "Soap Molds — Custom Silicone Soap & Bath Molds in Delhi | Saancha",
-    seoDesc: "Custom and ready-made silicone soap and bath molds, made in Delhi. Faceted bars, embeds, bath bombs. Food- and cosmetic-grade options, no minimum order.",
+    seoTitle: "Soap Moulds — Custom Silicone Soap & Bath Moulds in Delhi | Saancha",
+    seoDesc: "Custom and ready-made silicone soap and bath moulds, made in Delhi. Faceted bars, embeds, bath bombs. Food- and cosmetic-grade options, no minimum order.",
     heroVideo: video("soap-hero.mp4", VID.soapHero),
     heroPoster: asset("soap.png", IMG.soap),
-    hero: "Soap molds with crisp edges.",
-    lede: "Ready-made soap and bath molds at fixed prices, or custom molds built around your bar. Sharp facets that stay defined through curing and clean release.",
+    hero: "Soap moulds with crisp edges.",
+    lede: "Ready-made soap and bath moulds at fixed prices, or custom moulds built around your bar. Sharp facets that stay defined through curing and clean release.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["Food","Safe options"]],
     whyH: "Crisp edges, every batch.",
     whyP: [
@@ -91,22 +91,22 @@ export const materialsContent = {
     faq: [
       ["Is the silicone safe for skin products?","Yes — we offer food- and cosmetic-grade silicone for soap and bath. Tell us your process (CP / MP) and we spec accordingly."],
       ["Can you do a multi-cavity tray in my bar size?","Yes. Give us your bar weight and dimensions and we lay out a tray that casts them evenly."],
-      ["Will bath-bomb molds work too?","Yes — round and custom bath-bomb molds are among our common soap-category requests."]
+      ["Will bath-bomb moulds work too?","Yes — round and custom bath-bomb moulds are among our common soap-category requests."]
     ],
   },
 
   concrete: {
     label: "Concrete",
-    seoTitle: "Concrete Molds — Silicone Molds for Planters & Homeware | Saancha",
-    seoDesc: "Custom and ready-made two-part silicone molds for concrete planters, trays and homeware, made in Delhi. Handles undercuts and depth. No minimum order.",
+    seoTitle: "Concrete Moulds — Silicone Moulds for Planters & Homeware | Saancha",
+    seoDesc: "Custom and ready-made two-part silicone moulds for concrete planters, trays and homeware, made in Delhi. Handles undercuts and depth. No minimum order.",
     heroVideo: video("concrete-hero.mp4", VID.concreteHero),
     heroPoster: asset("concrete.png", IMG.concrete),
-    hero: "Concrete molds, built for depth.",
-    lede: "Ready-made concrete molds at fixed prices, or custom on request. Two-part silicone that survives rough mixes and releases a clean, smooth face.",
+    hero: "Concrete moulds, built for depth.",
+    lede: "Ready-made concrete moulds at fixed prices, or custom on request. Two-part silicone that survives rough mixes and releases a clean, smooth face.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["2-part","Undercut ready"]],
     whyH: "Built for weight and depth.",
     whyP: [
-      "Concrete and plaster are heavy and unforgiving — a mold has to survive rough mixes and still release a clean face. Our two-part molds handle undercuts, deep vessels and faceted geometry that single molds cannot.",
+      "Concrete and plaster are heavy and unforgiving — a mold has to survive rough mixes and still release a clean face. Our two-part moulds handle undercuts, deep vessels and faceted geometry that single moulds cannot.",
       "The silicone takes the abrasion so your castings come out smooth, with crisp edges and no trapped air on the visible faces."
     ],
     whyImg: asset("concrete.png", IMG.concrete),
@@ -123,20 +123,20 @@ export const materialsContent = {
       { name:"Tall Vessel", meta:"two-part", price:"₹2,100", img: asset("concrete-mold.png", IMG.concreteMold) },
     ],
     faq: [
-      ["Can concrete molds handle undercuts?","Yes — that is exactly why we build them two-part. The mold splits to release shapes a rigid single mold would trap."],
-      ["How long do concrete molds last?","With care, several hundred casts. Abrasive mixes shorten life; we advise on release agents to extend it."],
+      ["Can concrete moulds handle undercuts?","Yes — that is exactly why we build them two-part. The mold splits to release shapes a rigid single mold would trap."],
+      ["How long do concrete moulds last?","With care, several hundred casts. Abrasive mixes shorten life; we advise on release agents to extend it."],
       ["Do you do large planters?","Yes, within reason — tell us the finished dimensions and we will confirm feasibility and price."]
     ],
   },
 
   resin: {
     label: "Resin",
-    seoTitle: "Resin Molds — High-Detail Silicone Molds for Resin Art | Saancha",
-    seoDesc: "Custom and ready-made high-detail silicone resin molds, made in Delhi. Coasters, jewellery, paperweights, faceted gems. Glass-smooth finish, no minimum order.",
+    seoTitle: "Resin Moulds — High-Detail Silicone Moulds for Resin Art | Saancha",
+    seoDesc: "Custom and ready-made high-detail silicone resin moulds, made in Delhi. Coasters, jewellery, paperweights, faceted gems. Glass-smooth finish, no minimum order.",
     heroVideo: video("resin-hero.mp4", VID.resinHero),
     heroPoster: asset("resin.png", IMG.resin),
-    hero: "Resin molds, detail you see through.",
-    lede: "Ready-made resin molds at fixed prices, or a custom mold around your piece. Glass-smooth surfaces and razor facets that read perfectly through clear resin.",
+    hero: "Resin moulds, detail you see through.",
+    lede: "Ready-made resin moulds at fixed prices, or a custom mold around your piece. Glass-smooth surfaces and razor facets that read perfectly through clear resin.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["High","Detail transfer"]],
     whyH: "Detail you can see through.",
     whyP: [

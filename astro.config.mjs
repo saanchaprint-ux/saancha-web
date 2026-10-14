@@ -10,6 +10,9 @@ export default defineConfig({
   adapter: vercel(),
   integrations: [
     sitemap({
+      changefreq: 'weekly',
+      priority: 0.7,
+      lastmod: new Date(),
       // SSR material pages prerender nahi hote — unhe manually add karo
       customPages: [
         `${SITE}/candles`,

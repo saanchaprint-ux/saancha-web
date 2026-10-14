@@ -1,7 +1,10 @@
 ---
 export const prerender = false;
-Astro.cookies.delete('sb-access-token', { path: '/' });
-Astro.cookies.delete('sb-refresh-token', { path: '/' });
-Astro.cookies.delete('sb-auth', { path: '/' });
+const opts = { path: '/' };
+Astro.cookies.delete('sb-access-token', opts);
+Astro.cookies.delete('sb-refresh-token', opts);
+Astro.cookies.delete('sb-auth', opts);
+// Force-expire sb-auth with matching attributes (secure/sameSite) so the browser really drops it
+Astro.cookies.set('sb-auth', '', { path:'/', httpOnly:false, sameSite:'lax', secure:true, maxAge:0, expires:new Date(0) });
 return Astro.redirect('/login');
 ---
