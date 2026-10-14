@@ -1,12 +1,37 @@
 import { defineConfig } from 'astro/config';
 import vercel from '@astrojs/vercel';
+import sitemap from '@astrojs/sitemap';
+
+const SITE = 'https://www.saancha.in';
 
 export default defineConfig({
-  site: 'https://www.saancha.in',
-  output: 'static',                 // static by default; SSR pages opt-in via prerender=false
+  site: SITE,
+  output: 'static',
   adapter: vercel(),
-  security: {
-    checkOrigin: false,             // allow same-site form POSTs (login/signup)
-  },
+  integrations: [
+    sitemap({
+      // SSR material pages prerender nahi hote — unhe manually add karo
+      customPages: [
+        `${SITE}/candles`,
+        `${SITE}/soap`,
+        `${SITE}/concrete`,
+        `${SITE}/resin`,
+        `${SITE}/blog/how-to-choose-the-right-candle-mould`,
+        `${SITE}/blog/silicone-vs-3d-printed-moulds`,
+        `${SITE}/blog/make-sharp-handmade-soap-bars`,
+        `${SITE}/blog/concrete-homeware-moulds-guide`,
+      ],
+      filter: (page) =>
+        !page.includes('/admin') &&
+        !page.includes('/account') &&
+        !page.includes('/login') &&
+        !page.includes('/logout') &&
+        !page.includes('/signup') &&
+        !page.includes('/forgot') &&
+        !page.includes('/reset') &&
+        !page.includes('/api'),
+    }),
+  ],
+  security: { checkOrigin: false },
   build: { inlineStylesheets: 'auto' },
 });

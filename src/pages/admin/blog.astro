@@ -1,0 +1,106 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+const sb = supabaseAdmin();
+let notice = '';
+const slugify = (s)=> s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-');
+
+async function uploadImg(file){
+  if(!file||!file.size) return '';
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+  const path=`blog-${Date.now()}.${ext}`;
+  const buf=new Uint8Array(await file.arrayBuffer());
+  const { error }=await sb.storage.from('site-images').upload(path,buf,{contentType:file.type,upsert:true});
+  if(error) return '';
+  return sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;
+}
+
+if (Astro.request.method === 'POST') {
+  const f = await Astro.request.formData();
+  const action = f.get('action')?.toString();
+  if (action==='logout'){ clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+
+  if (action==='add' || action==='edit') {
+    const title=f.get('title')?.toString().trim();
+    let slug=f.get('slug')?.toString().trim(); if(!slug) slug=slugify(title||'post');
+    const row={ title, slug,
+      excerpt:f.get('excerpt')?.toString().trim()||null,
+      body:f.get('body')?.toString()||null,
+      published: f.get('published')==='on',
+    };
+    const cover=await uploadImg(f.get('cover'));
+    if(cover) row.cover_url=cover;
+    if (action==='add'){
+      const { error }=await sb.from('blog_posts').insert(row);
+      notice= error?('Error: '+error.message):'Post added.';
+    } else {
+      const id=f.get('id')?.toString();
+      const { error }=await sb.from('blog_posts').update(row).eq('id',id);
+      notice= error?('Error: '+error.message):'Post updated.';
+    }
+  }
+  if (action==='del'){ await sb.from('blog_posts').delete().eq('id',f.get('id')?.toString()); notice='Post deleted.'; }
+  if (action==='toggle'){ const id=f.get('id')?.toString(); const p=f.get('published')==='true'; await sb.from('blog_posts').update({published:!p}).eq('id',id); notice='Updated.'; }
+}
+
+const editId = Astro.url.searchParams.get('edit');
+let editing=null;
+if (editId){ const {data}=await sb.from('blog_posts').select('*').eq('id',editId).single(); editing=data; }
+const { data } = await sb.from('blog_posts').select('*').order('published_at',{ascending:false});
+const list = data||[];
+---
+<Base title="Admin — Blog — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head"><div><span class="kicker">Saancha Admin</span><h1>Blog</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form></div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/blog" class="on">Blog</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a>
+      </nav>
+      {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
+
+      <section class="admin-card">
+        <h2>{editing?'Edit post':'Add a post'}</h2>
+        <form method="POST" enctype="multipart/form-data" class="admin-form">
+          <input type="hidden" name="action" value={editing?'edit':'add'}>
+          {editing && <input type="hidden" name="id" value={editing.id}>}
+          <div class="ag">
+            <label>Title <input name="title" value={editing?.title||''} required></label>
+            <label>Slug (URL, optional) <input name="slug" value={editing?.slug||''} placeholder="auto from title"></label>
+          </div>
+          <label>Excerpt (short summary for cards) <input name="excerpt" value={editing?.excerpt||''}></label>
+          <label>Body (blank line = new paragraph) <textarea name="body" rows="12" class="json-box">{editing?.body||''}</textarea></label>
+          <div class="ag">
+            <label>Cover image {editing?.cover_url && <span class="mono" style="color:var(--fg-45)">(current set)</span>}<input type="file" name="cover" accept="image/*"></label>
+            <label style="flex-direction:row;align-items:center;gap:8px;margin-top:22px"><input type="checkbox" name="published" style="width:auto" checked={editing?.published}> Published</label>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn" type="submit">{editing?'Update post':'Add post'}</button>
+            {editing && <a href="/admin/blog" class="btn ghost">Cancel</a>}
+          </div>
+        </form>
+      </section>
+
+      <section class="admin-card">
+        <h2>All posts ({list.length})</h2>
+        <div class="atable">
+          {list.map(p => (
+            <div class="arow">
+              <div><b>{p.title}</b><span>/{p.slug}</span></div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <span class="badge" style={`color:${p.published?'#5FD189':'#E6A15C'};border-color:${p.published?'#5FD189':'#E6A15C'}`}>{p.published?'live':'draft'}</span>
+                <a class="mini-btn" href={`/admin/blog?edit=${p.id}`}>Edit</a>
+                <form method="POST"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value={p.id}><input type="hidden" name="published" value={String(p.published)}><button class="mini-btn">{p.published?'Unpublish':'Publish'}</button></form>
+                <form method="POST" onsubmit="return confirm('Delete this post?')"><input type="hidden" name="action" value="del"><input type="hidden" name="id" value={p.id}><button class="mini-btn danger">Delete</button></form>
+              </div>
+            </div>
+          ))}
+          {list.length===0 && <p style="color:var(--fg-45)">No posts yet.</p>}
+        </div>
+      </section>
+    </div>
+  </main>
+</Base>

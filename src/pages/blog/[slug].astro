@@ -1,0 +1,48 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { supabaseAuth } from '../../lib/supabase.js';
+import { site } from '../../data/site.js';
+
+const { slug } = Astro.params;
+let post = null;
+try {
+  const sb = supabaseAuth();
+  const { data } = await sb.from('blog_posts').select('*').eq('slug', slug).eq('published', true).single();
+  post = data;
+} catch(e) { post = null; }
+if (!post) return Astro.redirect('/blog', 302);
+
+const fmt = (d)=> new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+// body → paragraphs (split on blank lines)
+const paras = (post.body||'').split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+
+const jsonld = {
+  "@context":"https://schema.org","@type":"BlogPosting",
+  "headline": post.title, "datePublished": post.published_at,
+  "author": {"@type":"Organization","name": post.author||"Saancha"},
+  "image": post.cover_url || undefined,
+  "mainEntityOfPage": `${site.domain}/blog/${post.slug}`
+};
+---
+<Base title={`${post.title} — Saancha`} description={post.excerpt || post.title} ogImage={post.cover_url} jsonld={jsonld}>
+  <Nav slot="nav" />
+  <article class="sec blogpost" style="padding-top:130px">
+    <div class="wrap">
+      <a href="/blog" class="crumb mono" style="display:inline-block;margin-bottom:24px;color:var(--fg-45);text-decoration:none">← All posts</a>
+      <span class="mono" style="display:block;color:var(--amber);margin-bottom:14px">{fmt(post.published_at)}</span>
+      <h1 style="font-size:clamp(2rem,5vw,3.6rem);max-width:20ch;margin-bottom:24px">{post.title}</h1>
+      {post.cover_url && <div class="bp-cover"><img src={post.cover_url} alt={post.title} /></div>}
+      <div class="bp-body">
+        {paras.map(p => <p>{p}</p>)}
+      </div>
+      <div class="bp-cta">
+        <h3>Need a mould for your product?</h3>
+        <a href="/custom-moulds" class="btn" data-mag>Get a custom quote</a>
+      </div>
+    </div>
+  </article>
+  <Footer slot="footer" />
+</Base>
