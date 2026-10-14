@@ -1,24 +1,36 @@
 ---
 import { site } from '../data/site.js';
 const { products = [] } = Astro.props;
+const inr = (n)=> '₹'+Number(n).toLocaleString('en-IN');
 ---
-<div class="pgrid">
-  {products.map(p => (
-    <article class="pcard">
-      <div class="shot">
-        {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" /> : <div class="shop-placeholder">SAANCHA</div>}
-        <span class="tag2">{p.stock > 0 ? 'In stock' : 'Enquire'}</span>
-      </div>
-      <div class="b">
-        <h3>{p.name}</h3>
-        <span class="meta">{p.description}</span>
-        <span class="mono">{p.category} / SKU: {p.base_sku}</span>
-        <div class="row">
-          <span class="price">₹{Number(p.price).toLocaleString('en-IN')}<small>Ready-made</small></span>
-          <a class="enq" href={`https://wa.me/${site.whatsapp}?text=${encodeURIComponent('Hi, I want to enquire about '+p.name+' (SKU: '+p.base_sku+').')}`} target="_blank" rel="noopener">Enquire →</a>
+<div class="pgrid shop-grid">
+  {products.map(p => {
+    const hasMrp = p.mrp && Number(p.mrp) > Number(p.price);
+    const off = hasMrp ? Math.round((1 - Number(p.price)/Number(p.mrp))*100) : 0;
+    const out = !(p.stock > 0);
+    const msg = encodeURIComponent(`Hi, I want to enquire about ${p.name} (SKU: ${p.base_sku}).`);
+    return (
+      <article class={`pcard shop-card${out?' is-out':''}`}>
+        <div class="shot">
+          {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" /> : <div class="shop-placeholder">SAANCHA</div>}
+          {hasMrp && <span class="badge-save">Save {off}%</span>}
+          <span class={`badge-stock${out?' out':''}`}>{out ? 'Made to order' : 'In stock'}</span>
+          <a class="card-view" href={`https://wa.me/${site.whatsapp}?text=${msg}`} target="_blank" rel="noopener">Quick enquire</a>
         </div>
-      </div>
-    </article>
-  ))}
+        <div class="b">
+          <span class="mono cat">{p.category}</span>
+          <h3>{p.name}</h3>
+          {p.description && <span class="meta">{p.description}</span>}
+          <div class="row">
+            <span class="price">
+              {inr(p.price)}
+              {hasMrp && <s class="mrp">{inr(p.mrp)}</s>}
+              <small>Ready-made</small>
+            </span>
+            <a class="enq" href={`https://wa.me/${site.whatsapp}?text=${msg}`} target="_blank" rel="noopener">Enquire →</a>
+          </div>
+        </div>
+      </article>
+    );
+  })}
 </div>
-<style>.shop-placeholder{display:grid;place-items:center;width:100%;height:100%;min-height:230px;background:#1a1a1a;color:#dfa462;letter-spacing:.2em;font-size:14px}</style>

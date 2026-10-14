@@ -3,20 +3,72 @@ export const prerender = false;
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import {publishedProducts} from '../lib/catalog.js';
+import { publishedProducts } from '../lib/catalog.js';
 import ProductGrid from '../components/ProductGrid.astro';
-import {site} from '../data/site.js';
-const {products, error: unavailable} = await publishedProducts();
-const categories=['all','candles','soap','concrete','resin'];
-const active=categories.includes(Astro.url.searchParams.get('category'))?Astro.url.searchParams.get('category'):'all';
-const shown=active==='all'?products:products.filter(p=>p.category===active);
-const wa=site.whatsapp;
+import { site } from '../data/site.js';
+
+const { products, error: unavailable } = await publishedProducts();
+const categories = ['all','candles','soap','concrete','resin'];
+const active = categories.includes(Astro.url.searchParams.get('category')) ? Astro.url.searchParams.get('category') : 'all';
+const sort = Astro.url.searchParams.get('sort') || 'new';
+
+let shown = active==='all' ? products : products.filter(p => p.category===active);
+if (sort==='low') shown = [...shown].sort((a,b)=>Number(a.price)-Number(b.price));
+if (sort==='high') shown = [...shown].sort((a,b)=>Number(b.price)-Number(a.price));
+
+const wa = site.whatsapp;
+const HERO = 'https://d8j0ntlcm91z4.cloudfront.net/user_39EURzFKi2WVselNBK2rRVHKRD5/hf_20261014_020046_1e16f808-7476-4aee-ba0c-d28b6b69a551.png';
 ---
 <Base title="Shop Silicone Casting Moulds Online | Saancha" description="Browse ready-made silicone casting moulds for candles, soap, concrete and resin. Compare designs, sizes and prices, and enquire directly with Saancha.">
-<Nav slot="nav"/>
-<header class="mpage-hero shop-hero"><div class="wrap"><div class="crumb mono"><a href="/">Home</a> / Shop</div><span class="kicker">SAANCHA / READY-MADE</span><h1>Shop moulds.</h1><p class="lede">Made for makers. Explore our available moulds, or ask us for a custom shape.</p></div></header>
-<main class="readymade" id="shop"><div class="wrap"><div class="grid-head"><span class="kicker">Shop / Catalog</span><h2>Ready to make.</h2><p class="lede">Explore the Saancha collection. Browse by casting material.</p><nav class="shop-filters" aria-label="Filter products">{categories.map(c=><a class={active===c?'chip on':'chip'} href={c==='all'?'/shop':'/shop?category='+c}>{c==='all'?'All products':c}</a>)}</nav></div>
-{unavailable?<p class="lede">Shop is temporarily unavailable. Please contact us for the current catalog.</p>:shown.length===0?<p class="lede">No products are available in this category yet. Browse other collections or request a custom mould.</p>:<ProductGrid products={shown} />}
-</div></main><Footer slot="footer"/>
+  <Nav slot="nav" />
+
+  <header class="mpage-hero shop-hero">
+    <div class="mvid"><img src={HERO} alt="Saancha moulds collection" /></div>
+    <div class="wrap">
+      <div class="crumb mono"><a href="/">Home</a> / Shop</div>
+      <h1>Shop <span class="serif-it">moulds.</span></h1>
+      <p class="lede">Made for makers. Browse our ready-made collection, or ask us for a custom shape.</p>
+    </div>
+  </header>
+
+  <!-- trust strip -->
+  <div class="shop-trust">
+    <div class="wrap">
+      <span><b>No</b> minimum order</span>
+      <span><b>5–7</b> day builds</span>
+      <span><b>Made</b> in Delhi</span>
+      <span><b>100s</b> of pulls per mould</span>
+    </div>
+  </div>
+
+  <main class="readymade" id="shop">
+    <div class="wrap">
+      <div class="shop-bar">
+        <nav class="shop-filters" aria-label="Filter products">
+          {categories.map(c => <a class={active===c?'chip on':'chip'} href={c==='all'?'/shop':'/shop?category='+c}>{c==='all'?'All':c}</a>)}
+        </nav>
+        <form class="shop-sort" method="get">
+          {active!=='all' && <input type="hidden" name="category" value={active}>}
+          <label class="mono">Sort</label>
+          <select name="sort" onchange="this.form.submit()">
+            <option value="new" selected={sort==='new'}>Newest</option>
+            <option value="low" selected={sort==='low'}>Price: low to high</option>
+            <option value="high" selected={sort==='high'}>Price: high to low</option>
+          </select>
+        </form>
+      </div>
+
+      {unavailable
+        ? <p class="lede">Shop is temporarily unavailable. Please contact us for the current catalog.</p>
+        : shown.length===0
+          ? <div class="empty"><p>No products in this category yet.</p><p class="sub">Browse other collections or request a custom mould.</p><a href="/custom-moulds" class="btn ghost">Custom moulds</a></div>
+          : <ProductGrid products={shown} />}
+
+      <div class="custombar" style="margin-top:50px">
+        <div><h3>Can't find what you need?</h3><p>Every design started as a custom job. Send a sketch, photo or product — we build the mould around it.</p></div>
+        <a href="/custom-moulds" class="btn" data-mag>Get a custom quote</a>
+      </div>
+    </div>
+  </main>
+  <Footer slot="footer" />
 </Base>
-<style>.shop-hero{min-height:400px;background:#111}.shop-hero .wrap{padding-top:110px;padding-bottom:70px}.shop-filters{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}.shop-filters .chip{text-transform:capitalize;text-decoration:none}.shop-filters .on{background:var(--accent,#e7a45f);color:#151515}.shop-placeholder{display:grid;place-items:center;height:100%;min-height:230px;background:#1a1a1a;color:#dfa462;letter-spacing:.2em;font-size:14px}</style>
