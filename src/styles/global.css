@@ -685,8 +685,6 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .steps-row.with-img .s p{margin:0 24px 26px}
 
 /* ── shop page e-commerce polish ── */
-.shop-hero .mvid img{width:100%;height:100%;object-fit:cover}
-.shop-hero{min-height:52vh}
 .shop-trust{background:var(--bg-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .shop-trust .wrap{display:flex;justify-content:space-around;gap:16px;flex-wrap:wrap;padding:18px var(--pad)}
 .shop-trust span{color:var(--fg-45);font-size:.85rem}
@@ -712,3 +710,15 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .shop-card .price .mrp{color:var(--fg-45);font-size:.8rem;margin-left:6px;font-family:'Space Grotesk',sans-serif}
 .shop-card.is-out{opacity:.85}
 @media(hover:none){.shop-card .card-view{opacity:1;transform:none}}
+
+
+/* ── shop hero (clean, self-contained) ── */
+.shop-hero2{position:relative;overflow:hidden;padding:150px 0 clamp(50px,7vh,90px);display:flex;align-items:flex-end;min-height:46vh}
+.shop-hero2-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.shop-hero2::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(10,10,11,.45) 0%,rgba(10,10,11,.2) 35%,rgba(10,10,11,.7) 78%,var(--bg) 100%)}
+.shop-hero2 .wrap{position:relative;z-index:2}
+.shop-hero2 .crumb{display:flex;gap:10px;color:var(--fg-45);margin-bottom:18px}
+.shop-hero2 .crumb a{color:var(--fg-45);text-decoration:none}
+.shop-hero2 .crumb a:hover{color:var(--amber)}
+.shop-hero2 h1{font-size:clamp(2.4rem,6vw,4.6rem);margin-bottom:14px}
+.shop-hero2 .lede{max-width:50ch}
