@@ -43,9 +43,9 @@ const HERO = 'https://d8j0ntlcm91z4.cloudfront.net/user_39EURzFKi2WVselNBK2rRVHK
 
   <main class="readymade" id="shop">
     <div class="wrap">
-      <div class="shop-bar">
-        <nav class="shop-filters" aria-label="Filter products">
-          {categories.map(c => <a class={active===c?'chip on':'chip'} href={c==='all'?'/shop':'/shop?category='+c}>{c==='all'?'All':c}</a>)}
+      <div class="shop-bar saancha-shopbar">
+        <nav class="saancha-shopfilters" aria-label="Filter products">
+          {categories.map(c => <a class={active===c?'sf-chip on':'sf-chip'} href={c==='all'?'/shop':'/shop?category='+c}>{c==='all'?'All':c}</a>)}
         </nav>
         <form class="shop-sort" method="get">
           {active!=='all' && <input type="hidden" name="category" value={active}>}

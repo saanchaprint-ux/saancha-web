@@ -689,11 +689,6 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .shop-trust .wrap{display:flex;justify-content:space-around;gap:16px;flex-wrap:wrap;padding:18px var(--pad)}
 .shop-trust span{color:var(--fg-45);font-size:.85rem}
 .shop-trust b{color:var(--amber);font-family:'Fraunces',serif}
-.shop-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:34px}
-.shop-filters{display:flex;gap:8px;flex-wrap:wrap}
-.shop-filters .chip{text-transform:capitalize;text-decoration:none;padding:8px 18px;border:1px solid var(--line);border-radius:100px;color:var(--fg-70);font-size:.85rem;transition:all .2s}
-.shop-filters .chip:hover{border-color:var(--amber);color:var(--amber)}
-.shop-filters .chip.on{background:var(--amber);color:#0A0A0B;border-color:var(--amber)}
 .shop-sort{display:flex;align-items:center;gap:10px}
 .shop-sort label{color:var(--fg-45)}
 .shop-sort select{padding:9px 14px;border:1px solid var(--line);background:var(--bg);color:#F2EFE9;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:.85rem;-webkit-text-fill-color:#F2EFE9}
@@ -722,3 +717,11 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .shop-hero2 .crumb a:hover{color:var(--amber)}
 .shop-hero2 h1{font-size:clamp(2.4rem,6vw,4.6rem);margin-bottom:14px}
 .shop-hero2 .lede{max-width:50ch}
+
+
+/* ── shop filter bar (isolated classes) ── */
+.saancha-shopbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:34px;position:relative;z-index:1}
+.saancha-shopfilters{display:flex!important;position:static!important;gap:8px;flex-wrap:wrap;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;inset:auto!important;float:none!important}
+.saancha-shopfilters .sf-chip{display:inline-block;text-transform:capitalize;text-decoration:none;padding:8px 18px;border:1px solid var(--line);border-radius:100px;color:var(--fg-70);font-size:.85rem;transition:all .2s;position:static}
+.saancha-shopfilters .sf-chip:hover{border-color:var(--amber);color:var(--amber)}
+.saancha-shopfilters .sf-chip.on{background:var(--amber);color:#0A0A0B;border-color:var(--amber)}
