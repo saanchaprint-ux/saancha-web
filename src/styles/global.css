@@ -725,3 +725,8 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .saancha-shopfilters .sf-chip{display:inline-block;text-transform:capitalize;text-decoration:none;padding:8px 18px;border:1px solid var(--line);border-radius:100px;color:var(--fg-70);font-size:.85rem;transition:all .2s;position:static}
 .saancha-shopfilters .sf-chip:hover{border-color:var(--amber);color:var(--amber)}
 .saancha-shopfilters .sf-chip.on{background:var(--amber);color:#0A0A0B;border-color:var(--amber)}
+
+/* ── footer social icons ── */
+.f-social{display:flex;gap:12px;padding:24px 0 4px;border-top:1px solid var(--line);margin-top:20px}
+.f-social a{width:38px;height:38px;border:1px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fg-45);transition:all .25s}
+.f-social a:hover{border-color:var(--amber);color:var(--amber);transform:translateY(-2px)}

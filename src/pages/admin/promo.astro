@@ -17,6 +17,11 @@ if (Astro.request.method === 'POST') {
       { key:'promo_text', value: form.get('promo_text')?.toString().trim() },
       { key:'promo_cta', value: form.get('promo_cta')?.toString().trim() },
       { key:'promo_url', value: form.get('promo_url')?.toString().trim() },
+      { key:'social_facebook', value: form.get('social_facebook')?.toString().trim() },
+      { key:'social_youtube', value: form.get('social_youtube')?.toString().trim() },
+      { key:'social_linkedin', value: form.get('social_linkedin')?.toString().trim() },
+      { key:'social_instagram', value: form.get('social_instagram')?.toString().trim() },
+      { key:'social_twitter', value: form.get('social_twitter')?.toString().trim() },
     ];
     const { error } = await sb.from('settings').upsert(rows);
     notice = error ? ('Error: ' + error.message) : 'Promo saved. (Live site may take a moment / redeploy to refresh.)';
@@ -51,6 +56,24 @@ const m = Object.fromEntries((data||[]).map(r => [r.key, r.value]));
           <button class="btn" type="submit">Save</button>
         </form>
         <p class="pricenote">Starting price (₹999) sirf advertised starting price hai — har design ke liye guaranteed quote nahi. Text yahan se kabhi bhi badal sakte ho.</p>
+      </section>
+
+      <section class="admin-card">
+        <h2>Social links</h2>
+        <p class="pricenote" style="margin-top:0;margin-bottom:16px">Jo khaali chhodoge woh icon site pe nahi dikhega. Poora URL daalo (https://...).</p>
+        <form method="POST" class="admin-form">
+          <input type="hidden" name="action" value="save">
+          <input type="hidden" name="promo_text" value={m.promo_text||''}>
+          <input type="hidden" name="promo_cta" value={m.promo_cta||''}>
+          <input type="hidden" name="promo_url" value={m.promo_url||''}>
+          {m.promo_enabled==='true' && <input type="hidden" name="promo_enabled" value="on">}
+          <label>Instagram <input name="social_instagram" value={m.social_instagram||''} placeholder="https://instagram.com/..."></label>
+          <label>Facebook <input name="social_facebook" value={m.social_facebook||''} placeholder="https://facebook.com/..."></label>
+          <label>YouTube <input name="social_youtube" value={m.social_youtube||''} placeholder="https://youtube.com/@..."></label>
+          <label>LinkedIn <input name="social_linkedin" value={m.social_linkedin||''} placeholder="https://linkedin.com/company/..."></label>
+          <label>Twitter / X <input name="social_twitter" value={m.social_twitter||''} placeholder="https://x.com/..."></label>
+          <button class="btn" type="submit">Save social links</button>
+        </form>
       </section>
     </div>
   </main>

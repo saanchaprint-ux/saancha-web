@@ -1,5 +1,24 @@
 ---
 import { site, materials } from '../data/site.js';
+import { supabaseAuth } from '../lib/supabase.js';
+
+// social links from settings (admin-editable). Empty = icon hidden.
+let social = {};
+try {
+  const sb = supabaseAuth();
+  const { data } = await sb.from('settings').select('key,value')
+    .in('key', ['social_facebook','social_youtube','social_linkedin','social_instagram','social_twitter']);
+  social = Object.fromEntries((data||[]).map(r => [r.key, r.value]));
+} catch(e) { social = {}; }
+
+const socials = [
+  { key:'social_instagram', label:'Instagram', icon:'M12 2.2c3.2 0 3.6 0 4.9.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.86s0 3.6-.07 4.86c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.86.07s-3.6 0-4.86-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 01-1.38-.9 3.7 3.7 0 01-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.21 15.6 2.2 15.2 2.2 12s0-3.6.07-4.86c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.4 2.21 8.8 2.2 12 2.2m0 1.8c-3.14 0-3.5 0-4.74.07-.9.04-1.38.19-1.7.32-.43.16-.73.36-1.05.68-.32.32-.52.62-.68 1.05-.13.32-.28.8-.32 1.7C3.44 9.06 3.43 9.42 3.43 12s0 2.94.07 4.18c.04.9.19 1.38.32 1.7.16.43.36.73.68 1.05.32.32.62.52 1.05.68.32.13.8.28 1.7.32 1.24.06 1.6.07 4.74.07s3.5 0 4.74-.07c.9-.04 1.38-.19 1.7-.32.43-.16.73-.36 1.05-.68.32-.32.52-.62.68-1.05.13-.32.28-.8.32-1.7.06-1.24.07-1.6.07-4.18s0-2.94-.07-4.18c-.04-.9-.19-1.38-.32-1.7a2.8 2.8 0 00-.68-1.05 2.8 2.8 0 00-1.05-.68c-.32-.13-.8-.28-1.7-.32C15.5 4 15.14 4 12 4m0 3.06A4.94 4.94 0 1012 17a4.94 4.94 0 000-9.88m0 8.14A3.2 3.2 0 1112 8.8a3.2 3.2 0 010 6.4m6.3-8.34a1.15 1.15 0 11-2.3 0 1.15 1.15 0 012.3 0' },
+  { key:'social_facebook', label:'Facebook', icon:'M22 12a10 10 0 10-11.56 9.88v-7H7.9V12h2.54V9.8c0-2.5 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.9h-2.34v7A10 10 0 0022 12' },
+  { key:'social_youtube', label:'YouTube', icon:'M23 7.5a2.8 2.8 0 00-2-2C19.2 5 12 5 12 5s-7.2 0-9 .5a2.8 2.8 0 00-2 2A29 29 0 001 12a29 29 0 00.5 4.5 2.8 2.8 0 002 2C5.3 19 12 19 12 19s7.2 0 9-.5a2.8 2.8 0 002-2A29 29 0 0023 12a29 29 0 00-.5-4.5M9.8 15.3V8.7l5.7 3.3-5.7 3.3' },
+  { key:'social_linkedin', label:'LinkedIn', icon:'M6.94 5a2 2 0 11-4 0 2 2 0 014 0M3.2 8.75h3.5V21H3.2zM9.3 8.75h3.36v1.67h.05c.47-.9 1.6-1.84 3.3-1.84 3.54 0 4.19 2.33 4.19 5.36V21h-3.5v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H9.3z' },
+  { key:'social_twitter', label:'X', icon:'M18.9 2h3.3l-7.2 8.26L23.5 22h-6.6l-5.18-6.78L5.8 22H2.5l7.7-8.84L1.5 2h6.78l4.68 6.2zm-1.16 18h1.83L7.3 3.9H5.35z' },
+];
+const activeSocials = socials.filter(s => (social[s.key] || '').trim());
 ---
 <footer>
   <div class="wrap">
@@ -21,6 +40,15 @@ import { site, materials } from '../data/site.js';
         <a href="/#contact">Send an enquiry</a>
       </div>
     </div>
+    {activeSocials.length > 0 && (
+      <div class="f-social">
+        {activeSocials.map(s => (
+          <a href={social[s.key]} target="_blank" rel="noopener" aria-label={s.label} title={s.label}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d={s.icon}/></svg>
+          </a>
+        ))}
+      </div>
+    )}
     <div class="f-bot">
       <span class="mono">&copy; <span id="yr"></span> {site.name}</span>
       <span class="mono">{site.city}</span>
