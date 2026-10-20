@@ -52,8 +52,8 @@ h3{font-size:clamp(1.3rem,2.2vw,1.8rem)}
 #pre .pct{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.2em;color:var(--fg-45)}
 
 /* ── nav ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:600;transition:background .45s,border-color .45s;border-bottom:1px solid transparent}
-nav.solid{background:rgba(10,10,11,.72);backdrop-filter:blur(20px);border-bottom-color:var(--line)}
+#nav{position:fixed;top:0;left:0;right:0;z-index:600;transition:background .45s,border-color .45s;border-bottom:1px solid transparent}
+#nav.solid{background:rgba(10,10,11,.72);backdrop-filter:blur(20px);border-bottom-color:var(--line)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:82px;gap:20px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--fg)}
 .brand svg{width:26px;height:33px;flex:none;color:var(--amber)}
@@ -97,7 +97,7 @@ nav.solid{background:rgba(10,10,11,.72);backdrop-filter:blur(20px);border-bottom
 .btn:hover{transform:translateY(-2px);background:var(--amber-lit);border-color:var(--amber-lit)}
 .btn.ghost{background:transparent;color:var(--fg);border-color:var(--fg-25)}
 .btn.ghost:hover{background:var(--fg);color:#0A0A0B;border-color:var(--fg)}
-nav .btn{padding:11px 22px;font-size:.86rem}
+#nav .btn{padding:11px 22px;font-size:.86rem}
 
 /* ── HERO — tall section, sticky holder, scroll scrubs the film ── */
 .hero{position:relative;height:100svh;overflow:hidden}
@@ -817,3 +817,19 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .md-preview img{max-width:100%;border-radius:10px;margin:14px 0}
 .md-preview ul,.md-preview ol{margin:0 0 14px 20px}
 .md-hint{padding:8px 12px;color:var(--fg-45);font-size:.78rem;border-top:1px solid var(--line);margin:0}
+
+
+/* ── blog premium polish ── */
+.blog2-hero{position:relative;padding:150px 0 20px;text-align:center}
+.blog2-hero .wrap{max-width:780px}
+.blog2-hero h1{font-size:clamp(2.6rem,6.5vw,5rem);margin:0 auto}
+.blog2-hero .lede{margin-left:auto;margin-right:auto}
+.blog2-cats{justify-content:center;padding-top:34px;padding-bottom:10px}
+.blog2-featured{box-shadow:0 20px 60px -30px rgba(0,0,0,.6)}
+.blog2-featured .bf-img{aspect-ratio:4/3}
+@media(min-width:821px){.blog2-featured{grid-template-columns:1.25fr 1fr}}
+.blog2-card{box-shadow:0 14px 40px -28px rgba(0,0,0,.5)}
+.blog2-card .bc-body h3{font-family:'Fraunces',serif;font-weight:500}
+.bf-body h2{font-family:'Fraunces',serif;font-weight:500}
+/* subtle divider above grid */
+.blog2-grid{margin-top:8px}
