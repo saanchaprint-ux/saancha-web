@@ -15,68 +15,104 @@ try {
 
 const fmt = (d)=> new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 const readMin = (p)=> p.read_min || Math.max(2, Math.round((p.body||'').split(/\s+/).length / 200));
+const initial = (p)=> (p.author||'Saancha').trim().charAt(0).toUpperCase();
 
-// category filter
 const cats = ['All', ...Array.from(new Set(posts.map(p => p.category || 'Guides')))];
 const active = Astro.url.searchParams.get('cat') || 'All';
 const filtered = active==='All' ? posts : posts.filter(p => (p.category||'Guides')===active);
-
 const featured = filtered[0];
 const rest = filtered.slice(1);
 ---
 <Base title="Casting Mould Guides & Tips | Saancha Blog" description="Expert guides on casting moulds — how to choose candle moulds, silicone vs 3D-printed, soap &amp; concrete casting tips from the Saancha workshop in Delhi.">
   <Nav slot="nav" />
-  <header class="blog2-hero">
+
+  <header class="bl-hero">
     <div class="wrap">
-      <span class="kicker rvu" style="display:block;margin-bottom:16px">Journal</span>
+      <span class="kicker rvu" style="display:block;margin-bottom:16px">The Journal</span>
       <h1 class="rvu">Notes from the <span class="serif-it">workshop.</span></h1>
-      <p class="lede rvu" style="margin-top:16px">Guides, comparisons and ideas on casting moulds — straight from the people who make them.</p>
+      <p class="lede rvu">Guides, comparisons and ideas on casting moulds — straight from the people who make them.</p>
     </div>
   </header>
 
-  {posts.length>0 && (
-    <nav class="blog2-cats wrap" aria-label="Categories">
-      {cats.map(c => <a class={active===c?'b2-chip on':'b2-chip'} href={c==='All'?'/blog':`/blog?cat=${encodeURIComponent(c)}`}>{c}</a>)}
-    </nav>
-  )}
+  <div class="wrap">
+    {posts.length>0 && (
+      <div class="bl-toolbar">
+        <nav class="bl-cats" aria-label="Categories">
+          {cats.map(c => <a class={active===c?'bl-chip on':'bl-chip'} href={c==='All'?'/blog':`/blog?cat=${encodeURIComponent(c)}`}>{c}</a>)}
+        </nav>
+        <div class="bl-search">
+          <span>⌕</span><input type="text" id="blogSearch" placeholder="Search articles…" autocomplete="off">
+        </div>
+      </div>
+    )}
+    {posts.length>0 && <div class="bl-count" id="blogCount">Showing {filtered.length} of {filtered.length} article{filtered.length!==1?'s':''}</div>}
+  </div>
 
-  <section class="sec" style="padding-top:30px">
+  <section class="sec" style="padding-top:8px" id="blogResults">
     <div class="wrap">
       {posts.length===0 ? (
         <div class="empty"><p>No posts yet.</p><p class="sub">New articles are on the way.</p></div>
       ) : (
         <>
           {featured && (
-            <a class="blog2-featured rvu" href={`/blog/${featured.slug}`}>
-              <div class="bf-img">{featured.cover_url && <img src={featured.cover_url} alt={featured.title} />}</div>
-              <div class="bf-body">
-                <span class="mono bf-meta"><span class="b2-tag">{featured.category||'Guides'}</span> · {fmt(featured.published_at)} · {readMin(featured)} min read</span>
+            <a class="bl-featured rvu bl-post" href={`/blog/${featured.slug}`}
+               data-title={featured.title.toLowerCase()} data-ex={(featured.excerpt||'').toLowerCase()}>
+              <div class="bl-fimg">{featured.cover_url
+                ? <img src={featured.cover_url} alt={featured.title} />
+                : <span class="bl-ph">Featured</span>}</div>
+              <div class="bl-fbody">
+                <div class="bl-tags"><span class="bl-tag">{featured.category||'Guides'}</span></div>
                 <h2>{featured.title}</h2>
-                {featured.excerpt && <p>{featured.excerpt}</p>}
-                <span class="bf-read">Read article →</span>
+                {featured.excerpt && <p class="bl-ex">{featured.excerpt}</p>}
+                <div class="bl-meta"><span class="bl-av">{initial(featured)}</span> {featured.author||'Saancha'} · {fmt(featured.published_at)} · {readMin(featured)} min read</div>
               </div>
             </a>
           )}
-          {rest.length>0 && (
-            <div class="blog2-grid">
-              {rest.map(p => (
-                <a class="blog2-card rvu" href={`/blog/${p.slug}`}>
-                  <div class="bc-img">{p.cover_url && <img src={p.cover_url} alt={p.title} loading="lazy" />}
-                    <span class="bc-tag">{p.category||'Guides'}</span>
-                  </div>
-                  <div class="bc-body">
-                    <span class="mono bc-date">{fmt(p.published_at)} · {readMin(p)} min</span>
-                    <h3>{p.title}</h3>
-                    {p.excerpt && <p>{p.excerpt}</p>}
-                    <span class="bc-read">Read →</span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
+          <div class="bl-grid" id="blogGrid">
+            {rest.map(p => (
+              <a class="bl-card rvu bl-post" href={`/blog/${p.slug}`}
+                 data-title={p.title.toLowerCase()} data-ex={(p.excerpt||'').toLowerCase()}>
+                <div class="bl-cimg">{p.cover_url
+                  ? <img src={p.cover_url} alt={p.title} loading="lazy" />
+                  : <span class="bl-ph">Image</span>}
+                  <span class="bl-ctag">{p.category||'Guides'}</span>
+                </div>
+                <div class="bl-cbody">
+                  <span class="bl-date">{fmt(p.published_at)} · {readMin(p)} min</span>
+                  <h3>{p.title}</h3>
+                  {p.excerpt && <p class="bl-cex">{p.excerpt}</p>}
+                  <span class="bl-read">Read →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+          <div class="bl-noresults" id="blogNoResults" hidden><p>No articles match your search.</p></div>
         </>
       )}
     </div>
   </section>
+
   <Footer slot="footer" />
+
+  <script is:inline>
+    (function(){
+      const input=document.getElementById('blogSearch');
+      if(!input) return;
+      const posts=[...document.querySelectorAll('.bl-post')];
+      const count=document.getElementById('blogCount');
+      const none=document.getElementById('blogNoResults');
+      const total=posts.length;
+      input.addEventListener('input', ()=>{
+        const q=input.value.trim().toLowerCase();
+        let shown=0;
+        posts.forEach(el=>{
+          const hit = !q || el.dataset.title.includes(q) || el.dataset.ex.includes(q);
+          el.style.display = hit ? '' : 'none';
+          if(hit) shown++;
+        });
+        if(count) count.textContent = `Showing ${shown} of ${total} article${total!==1?'s':''}`;
+        if(none) none.hidden = shown>0;
+      });
+    })();
+  </script>
 </Base>

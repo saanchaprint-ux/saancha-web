@@ -18,60 +18,80 @@ if (!post) return Astro.redirect('/blog', 302);
 
 const fmt = (d)=> new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
 const readMin = post.read_min || Math.max(2, Math.round((post.body||'').split(/\s+/).length / 200));
-
-// render markdown → HTML (marked). Safe subset; our content only.
-marked.setOptions({ breaks: true, gfm: true });
+const initial = (post.author||'Saancha').trim().charAt(0).toUpperCase();
+marked.setOptions({ breaks:true, gfm:true });
 const html = marked.parse(post.body || '');
 
-// related posts (same category)
 let related = [];
 try {
   const sb = supabaseAuth();
-  const { data } = await sb.from('blog_posts').select('slug,title,cover_url,category,published_at')
+  const { data } = await sb.from('blog_posts').select('slug,title,cover_url,category,published_at,read_min,body')
     .eq('published', true).neq('slug', slug).order('published_at',{ascending:false}).limit(3);
   related = data || [];
 } catch(e) { related = []; }
+const rMin = (p)=> p.read_min || Math.max(2, Math.round((p.body||'').split(/\s+/).length/200));
+
+const url = `${site.domain}/blog/${post.slug}`;
+const sh = {
+  linkedin:`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+  facebook:`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+  twitter:`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(post.title)}`,
+  whatsapp:`https://wa.me/?text=${encodeURIComponent(post.title+' '+url)}`,
+};
 
 const jsonld = {
   "@context":"https://schema.org","@type":"BlogPosting",
-  "headline": post.title, "datePublished": post.published_at,
-  "author": {"@type":"Organization","name": post.author||"Saancha"},
-  "image": post.cover_url || undefined,
-  "mainEntityOfPage": `${site.domain}/blog/${post.slug}`
+  "headline":post.title,"datePublished":post.published_at,
+  "author":{"@type":"Organization","name":post.author||"Saancha"},
+  "image":post.cover_url||undefined,"mainEntityOfPage":url
 };
 ---
 <Base title={`${post.title} | Saancha`} description={post.excerpt || post.title} ogImage={post.cover_url} jsonld={jsonld}>
   <Nav slot="nav" />
-  <article class="blogpost2">
-    <div class="wrap bp2-head">
-      <a href="/blog" class="crumb mono bp2-back">← All posts</a>
-      <span class="mono bp2-meta"><span class="b2-tag">{post.category||'Guides'}</span> · {fmt(post.published_at)} · {readMin} min read</span>
+  <article class="bp">
+    <div class="wrap bp-head">
+      <a href="/blog" class="bp-back">← All articles</a>
+      <div class="bp-meta"><span class="bl-tag">{post.category||'Guides'}</span> <span>{fmt(post.published_at)}</span> · <span>{readMin} min read</span></div>
       <h1>{post.title}</h1>
-      {post.excerpt && <p class="bp2-excerpt">{post.excerpt}</p>}
+      {post.excerpt && <p class="bp-lead">{post.excerpt}</p>}
+      <div class="bp-author">
+        <span class="bp-av">{initial}</span>
+        <div><b>{post.author||'Saancha Workshop'}</b><span>Casting moulds · Delhi</span></div>
+      </div>
     </div>
-    {post.cover_url && <div class="wrap"><div class="bp2-cover"><img src={post.cover_url} alt={post.title} /></div></div>}
-    <div class="wrap bp2-wrap">
-      <div class="bp2-body" set:html={html}></div>
+
+    {post.cover_url && <div class="bp-cover-wrap"><div class="bp-cover"><img src={post.cover_url} alt={post.title} /></div></div>}
+
+    <div class="wrap bp-main">
+      <div class="bp-prose" set:html={html}></div>
+
+      <div class="bp-share">
+        <span>Share</span>
+        <a href={sh.linkedin} target="_blank" rel="noopener" aria-label="LinkedIn">in</a>
+        <a href={sh.facebook} target="_blank" rel="noopener" aria-label="Facebook">f</a>
+        <a href={sh.twitter} target="_blank" rel="noopener" aria-label="X">𝕏</a>
+        <a href={sh.whatsapp} target="_blank" rel="noopener" aria-label="WhatsApp">wa</a>
+      </div>
+    </div>
+
+    <div class="wrap bp-cta">
+      <h3>Need a mould for your product?</h3>
+      <a href="/custom-moulds" class="btn" data-mag>Get a custom quote</a>
     </div>
 
     {related.length>0 && (
-      <div class="wrap bp2-related">
+      <div class="wrap bp-related">
         <h2>More from the journal</h2>
-        <div class="blog2-grid">
+        <div class="bl-grid">
           {related.map(p => (
-            <a class="blog2-card" href={`/blog/${p.slug}`}>
-              <div class="bc-img">{p.cover_url && <img src={p.cover_url} alt={p.title} loading="lazy" />}<span class="bc-tag">{p.category||'Guides'}</span></div>
-              <div class="bc-body"><h3>{p.title}</h3><span class="bc-read">Read →</span></div>
+            <a class="bl-card" href={`/blog/${p.slug}`}>
+              <div class="bl-cimg">{p.cover_url ? <img src={p.cover_url} alt={p.title} loading="lazy" /> : <span class="bl-ph">Image</span>}<span class="bl-ctag">{p.category||'Guides'}</span></div>
+              <div class="bl-cbody"><span class="bl-date">{fmt(p.published_at)} · {rMin(p)} min</span><h3>{p.title}</h3><span class="bl-read">Read →</span></div>
             </a>
           ))}
         </div>
       </div>
     )}
-
-    <div class="wrap bp2-cta">
-      <h3>Need a mould for your product?</h3>
-      <a href="/custom-moulds" class="btn" data-mag>Get a custom quote</a>
-    </div>
   </article>
   <Footer slot="footer" />
 </Base>
