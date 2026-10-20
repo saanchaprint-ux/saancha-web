@@ -14,35 +14,67 @@ try {
 } catch(e) { posts = []; }
 
 const fmt = (d)=> new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const readMin = (p)=> p.read_min || Math.max(2, Math.round((p.body||'').split(/\s+/).length / 200));
+
+// category filter
+const cats = ['All', ...Array.from(new Set(posts.map(p => p.category || 'Guides')))];
+const active = Astro.url.searchParams.get('cat') || 'All';
+const filtered = active==='All' ? posts : posts.filter(p => (p.category||'Guides')===active);
+
+const featured = filtered[0];
+const rest = filtered.slice(1);
 ---
 <Base title="Casting Mould Guides & Tips | Saancha Blog" description="Expert guides on casting moulds — how to choose candle moulds, silicone vs 3D-printed, soap &amp; concrete casting tips from the Saancha workshop in Delhi.">
   <Nav slot="nav" />
-  <header class="sec" style="padding-top:140px;padding-bottom:40px">
+  <header class="blog2-hero">
     <div class="wrap">
       <span class="kicker rvu" style="display:block;margin-bottom:16px">Journal</span>
-      <h1 class="rvu" style="font-size:clamp(2.4rem,6vw,4.4rem);max-width:16ch">Notes from the <span class="serif-it">workshop.</span></h1>
+      <h1 class="rvu">Notes from the <span class="serif-it">workshop.</span></h1>
       <p class="lede rvu" style="margin-top:16px">Guides, comparisons and ideas on casting moulds — straight from the people who make them.</p>
     </div>
   </header>
 
-  <section class="sec" style="padding-top:20px">
+  {posts.length>0 && (
+    <nav class="blog2-cats wrap" aria-label="Categories">
+      {cats.map(c => <a class={active===c?'b2-chip on':'b2-chip'} href={c==='All'?'/blog':`/blog?cat=${encodeURIComponent(c)}`}>{c}</a>)}
+    </nav>
+  )}
+
+  <section class="sec" style="padding-top:30px">
     <div class="wrap">
       {posts.length===0 ? (
         <div class="empty"><p>No posts yet.</p><p class="sub">New articles are on the way.</p></div>
       ) : (
-        <div class="blog-grid">
-          {posts.map(p => (
-            <a class="blog-card rvu" href={`/blog/${p.slug}`}>
-              <div class="bc-img">{p.cover_url && <img src={p.cover_url} alt={p.title} loading="lazy" />}</div>
-              <div class="bc-body">
-                <span class="mono bc-date">{fmt(p.published_at)}</span>
-                <h2>{p.title}</h2>
-                {p.excerpt && <p>{p.excerpt}</p>}
-                <span class="bc-read">Read →</span>
+        <>
+          {featured && (
+            <a class="blog2-featured rvu" href={`/blog/${featured.slug}`}>
+              <div class="bf-img">{featured.cover_url && <img src={featured.cover_url} alt={featured.title} />}</div>
+              <div class="bf-body">
+                <span class="mono bf-meta"><span class="b2-tag">{featured.category||'Guides'}</span> · {fmt(featured.published_at)} · {readMin(featured)} min read</span>
+                <h2>{featured.title}</h2>
+                {featured.excerpt && <p>{featured.excerpt}</p>}
+                <span class="bf-read">Read article →</span>
               </div>
             </a>
-          ))}
-        </div>
+          )}
+          {rest.length>0 && (
+            <div class="blog2-grid">
+              {rest.map(p => (
+                <a class="blog2-card rvu" href={`/blog/${p.slug}`}>
+                  <div class="bc-img">{p.cover_url && <img src={p.cover_url} alt={p.title} loading="lazy" />}
+                    <span class="bc-tag">{p.category||'Guides'}</span>
+                  </div>
+                  <div class="bc-body">
+                    <span class="mono bc-date">{fmt(p.published_at)} · {readMin(p)} min</span>
+                    <h3>{p.title}</h3>
+                    {p.excerpt && <p>{p.excerpt}</p>}
+                    <span class="bc-read">Read →</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   </section>

@@ -29,6 +29,8 @@ if (Astro.request.method === 'POST') {
     const row={ title, slug,
       excerpt:f.get('excerpt')?.toString().trim()||null,
       body:f.get('body')?.toString()||null,
+      category:f.get('category')?.toString().trim()||'Guides',
+      read_min: f.get('read_min') ? parseInt(f.get('read_min').toString()) : null,
       published: f.get('published')==='on',
     };
     const cover=await uploadImg(f.get('cover'));
@@ -72,7 +74,35 @@ const list = data||[];
             <label>Slug (URL, optional) <input name="slug" value={editing?.slug||''} placeholder="auto from title"></label>
           </div>
           <label>Excerpt (short summary for cards) <input name="excerpt" value={editing?.excerpt||''}></label>
-          <label>Body (blank line = new paragraph) <textarea name="body" rows="12" class="json-box">{editing?.body||''}</textarea></label>
+          <div class="ag">
+            <label>Category <input name="category" value={editing?.category||'Guides'} placeholder="Guides"></label>
+            <label>Read time (min, optional) <input name="read_min" type="number" value={editing?.read_min||''} placeholder="auto"></label>
+          </div>
+          <label>Body
+            <div class="md-editor">
+              <div class="md-toolbar">
+                <button type="button" data-md="h2">H2</button>
+                <button type="button" data-md="h3">H3</button>
+                <button type="button" data-md="bold"><b>B</b></button>
+                <button type="button" data-md="italic"><i>I</i></button>
+                <button type="button" data-md="ul">• List</button>
+                <button type="button" data-md="ol">1. List</button>
+                <button type="button" data-md="quote">❝ Quote</button>
+                <button type="button" data-md="link">🔗 Link</button>
+                <button type="button" data-md="img">🖼 Image</button>
+                <span class="md-spacer"></span>
+                <button type="button" id="mdPreviewToggle" class="md-prev-btn">Preview</button>
+              </div>
+              <div class="md-panes">
+                <textarea name="body" id="mdBody" rows="16" spellcheck="true">{editing?.body||''}</textarea>
+                <div class="md-preview" id="mdPreview" hidden></div>
+              </div>
+              <p class="md-hint">Markdown supported — use the buttons or type. Blank line = new paragraph. Image button uploads &amp; inserts.</p>
+            </div>
+          </label>
+          <!-- hidden file input for image uploads inside body -->
+          <input type="file" id="mdImgFile" accept="image/*" style="display:none">
+          <input type="hidden" name="body_images" id="mdBodyImages">
           <div class="ag">
             <label>Cover image {editing?.cover_url && <span class="mono" style="color:var(--fg-45)">(current set)</span>}<input type="file" name="cover" accept="image/*"></label>
             <label style="flex-direction:row;align-items:center;gap:8px;margin-top:22px"><input type="checkbox" name="published" style="width:auto" checked={editing?.published}> Published</label>
@@ -103,4 +133,63 @@ const list = data||[];
       </section>
     </div>
   </main>
+
+  <script type="module" is:inline>
+    import { marked } from 'https://esm.sh/marked@18';
+    const ta = document.getElementById('mdBody');
+    const prev = document.getElementById('mdPreview');
+    const toggle = document.getElementById('mdPreviewToggle');
+    const imgInput = document.getElementById('mdImgFile');
+    if (ta) {
+      // wrap selection / insert markdown
+      function surround(before, after=''){
+        const s=ta.selectionStart, e=ta.selectionEnd, v=ta.value;
+        const sel=v.slice(s,e);
+        ta.value = v.slice(0,s)+before+sel+after+v.slice(e);
+        ta.focus(); ta.selectionStart=s+before.length; ta.selectionEnd=s+before.length+sel.length;
+        renderPrev();
+      }
+      function linePrefix(pfx){
+        const s=ta.selectionStart, v=ta.value;
+        const lineStart=v.lastIndexOf('\n',s-1)+1;
+        ta.value=v.slice(0,lineStart)+pfx+v.slice(lineStart);
+        ta.focus(); renderPrev();
+      }
+      document.querySelectorAll('.md-toolbar button[data-md]').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const t=b.dataset.md;
+          if(t==='bold') surround('**','**');
+          else if(t==='italic') surround('*','*');
+          else if(t==='h2') linePrefix('## ');
+          else if(t==='h3') linePrefix('### ');
+          else if(t==='ul') linePrefix('- ');
+          else if(t==='ol') linePrefix('1. ');
+          else if(t==='quote') linePrefix('> ');
+          else if(t==='link'){ const u=prompt('Link URL:'); if(u) surround('[', `](${u})`); }
+          else if(t==='img'){ imgInput.click(); }
+        });
+      });
+      // image upload
+      imgInput && imgInput.addEventListener('change', async ()=>{
+        const f=imgInput.files[0]; if(!f) return;
+        const fd=new FormData(); fd.append('file', f);
+        const btn=document.querySelector('[data-md="img"]'); const old=btn.textContent; btn.textContent='Uploading…';
+        try{
+          const r=await fetch('/api/upload',{method:'POST',body:fd});
+          const j=await r.json();
+          if(j.url){ const s=ta.selectionStart, v=ta.value; const ins=`\n\n![image](${j.url})\n\n`; ta.value=v.slice(0,s)+ins+v.slice(s); renderPrev(); }
+          else alert('Upload failed: '+(j.error||'')); 
+        }catch(e){ alert('Upload failed'); }
+        btn.textContent=old; imgInput.value='';
+      });
+      // live preview
+      function renderPrev(){ prev.innerHTML = marked.parse(ta.value||''); }
+      toggle && toggle.addEventListener('click', ()=>{
+        const on = prev.hasAttribute('hidden');
+        if(on){ renderPrev(); prev.hidden=false; ta.closest('.md-panes').classList.add('split'); toggle.classList.add('on'); toggle.textContent='Editing'; }
+        else { prev.hidden=true; ta.closest('.md-panes').classList.remove('split'); toggle.classList.remove('on'); toggle.textContent='Preview'; }
+      });
+      ta.addEventListener('input', ()=>{ if(!prev.hidden) renderPrev(); });
+    }
+  </script>
 </Base>
