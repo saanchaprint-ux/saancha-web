@@ -2,6 +2,7 @@
 export const prerender=false;
 import Base from '../../layouts/Base.astro';
 import {isAdmin,supabaseAdmin} from '../../lib/admin.js';
+import { compressImage } from '../../lib/imgcompress.js';
 import {randomUUID} from 'node:crypto';
 if(!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
 const sb=supabaseAdmin();let notice='';
@@ -10,8 +11,8 @@ if(Astro.request.method==='POST'){
  if(action==='upload'){
  const file=f.get('file'); const alt=String(f.get('alt')||'').slice(0,300);
  if(!file || !file.size || file.size>8*1024*1024 || !['image/jpeg','image/png','image/webp','image/gif','image/avif'].includes(file.type))notice='Error: Use JPEG, PNG, WebP, GIF or AVIF under 8 MB.';
- else {const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'})[file.type];const path=`cms/${randomUUID()}.${ext}`;
- const {error}=await sb.storage.from('site-images').upload(path,new Uint8Array(await file.arrayBuffer()),{contentType:file.type,upsert:false});
+ else {const c=await compressImage(file,{maxWidth:1600,quality:80});const path=`cms/${randomUUID()}.${c.ext}`;
+ const {error}=await sb.storage.from('site-images').upload(path,c.buffer,{contentType:c.contentType,upsert:false});
  if(error)notice='Error: '+error.message;else{const url=sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;const {error:e}=await sb.from('cms_media').insert({path,url,alt_text:alt});notice=e?'Error: '+e.message:'Image uploaded.';}}
  }
  if(action==='delete'){const id=String(f.get('id')||'');const {data}=await sb.from('cms_media').select('path').eq('id',id).single();if(data){await sb.storage.from('site-images').remove([data.path]);const {error}=await sb.from('cms_media').delete().eq('id',id);notice=error?'Error: '+error.message:'Image removed.';}}

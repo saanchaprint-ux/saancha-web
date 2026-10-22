@@ -17,7 +17,8 @@ export const site = {
 // USE_LOCAL true kar do (README padho).
 export const USE_LOCAL = true;  // images now served locally from public/
 const CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_39EURzFKi2WVselNBK2rRVHKRD5/";
-export const asset = (local, remote) => USE_LOCAL ? `/images/${remote}` : CDN + remote;
+// local pe images WebP serve hoti hain (compress-images.mjs ne banayi). CDN pe original.
+export const asset = (local, remote) => USE_LOCAL ? `/images/${remote.replace(/\.(png|jpe?g)$/i,'.webp')}` : CDN + remote;
 export const video = (local, remote) => USE_LOCAL ? `/videos/${remote}` : CDN + remote;
 
 // Nav links — yahan badlo, SAARE pages pe change ho jaayega

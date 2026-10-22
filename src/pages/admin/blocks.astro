@@ -2,6 +2,7 @@
 export const prerender = false;
 import Base from '../../layouts/Base.astro';
 import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+import { compressImage } from '../../lib/imgcompress.js';
 if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
 
 const sb = supabaseAdmin();
@@ -11,10 +12,9 @@ const curPage = (Astro.url.searchParams.get('page') || 'home');
 
 async function uploadImg(file, prefix){
   if (!file || !file.size) return '';
-  const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+  const { buffer, contentType, ext } = await compressImage(file, { maxWidth:1600, quality:80 });
   const path = `block-${prefix}-${Date.now()}.${ext}`;
-  const buf = new Uint8Array(await file.arrayBuffer());
-  const { error } = await sb.storage.from('site-images').upload(path, buf, { contentType:file.type, upsert:true });
+  const { error } = await sb.storage.from('site-images').upload(path, buffer, { contentType, upsert:true });
   if (error) return '';
   return sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;
 }
