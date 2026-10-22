@@ -261,8 +261,11 @@ footer{background:#000;color:var(--fg-45);padding:clamp(50px,7vw,90px) 0 30px;ov
 .fab:hover{transform:scale(1.08)}
 .fab svg{width:28px;height:28px;fill:#0A0A0B}
 
-.rvu{opacity:0;transform:translateY(24px)}
-@media(prefers-reduced-motion:reduce){.rvu{opacity:1;transform:none}}
+/* rvu visible by default — JS (.js-anim) hides then reveals only if GSAP loads.
+   Agar GSAP/JS fail ho toh content phir bhi dikhe (no black gaps). */
+.rvu{opacity:1;transform:none}
+.js-anim .rvu{opacity:0;transform:translateY(24px)}
+@media(prefers-reduced-motion:reduce){.js-anim .rvu{opacity:1;transform:none}}
 
 
 /* ── nav dropdown ── */

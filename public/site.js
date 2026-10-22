@@ -32,7 +32,7 @@
       const end=+el.dataset.count,sfx=el.dataset.suffix||'',o={v:0};
       gsap.to(o,{v:end,duration:1.9,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 94%'},onUpdate:()=>el.textContent=Math.round(o.v)+sfx});});
   }
-  if(window.gsap){gsap.set('.ln > span',{yPercent:112});gsap.set('.rvu',{opacity:0,y:24});reveal();}
+  if(window.gsap){document.documentElement.classList.add('js-anim');gsap.set('.ln > span',{yPercent:112});gsap.set('.rvu',{opacity:0,y:24});reveal();}
 
   /* nav solidify + progress */
   const nav=document.getElementById('nav');
