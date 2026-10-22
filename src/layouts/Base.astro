@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { site } from '../data/site.js';
 import { supabaseAdmin, isAdmin } from '../lib/admin.js';
+import Analytics from '@vercel/analytics/astro';
 const {
   title = `${site.name} — Casting Molds, Made in ${site.city}`,
   description = `${site.name} designs and manufactures casting molds in Delhi — candles, soap, resin, concrete. No minimum order, 5–7 day turnaround.`,
@@ -64,6 +65,7 @@ const safeJsonld = jsonld ? JSON.stringify(jsonld).replace(/</g,'\\u003c') : '';
     gtag('js', new Date());
     gtag('config', ${JSON.stringify(gaMeasurementId)});
   `} />}
+  <Analytics />
 </head>
 <body>
   <!-- logo mark (shared) -->
@@ -90,8 +92,5 @@ const safeJsonld = jsonld ? JSON.stringify(jsonld).replace(/</g,'\\u003c') : '';
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" is:inline></script>
   <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js" is:inline></script>
   <script src="/site.js" is:inline></script>
-  <!-- Vercel Analytics (free visitor tracking) -->
-  <script is:inline>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
-  <script defer src="/_vercel/insights/script.js" is:inline></script>
 </body>
 </html>
