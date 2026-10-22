@@ -191,7 +191,7 @@ const jsonld = {
         </form>
         <div class="info rvu">
           <div><span class="mono">WhatsApp</span><a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">Message us on WhatsApp</a></div>
-          <div><span class="mono">Email</span><a href={`mailto:${site.email}`}>{site.email}</a></div>
+          <div><span class="mono">Email</span><a class="obf-mail" data-u={site.email.split("@")[0]} data-d={site.email.split("@")[1]} href="#">Email us</a></div>
           <div><span class="mono">Workshop</span><p>{site.city}</p></div>
           <div><span class="mono">Response</span><p>Usually the same day</p></div>
         </div>

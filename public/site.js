@@ -306,3 +306,51 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
     document.getElementById('calculator').scrollIntoView({behavior:'smooth'});
   });
 })();
+
+/* ── Lead capture: WhatsApp click → save to CRM (fire-and-forget) ── */
+(function(){
+  function labelFor(a){
+    // figure out which button this is
+    if (a.closest('#nav')) return 'nav';
+    if (a.closest('.fab')) return 'floating-button';
+    if (a.closest('.hero, .mpage-hero, .shop-hero2, .cm-hero')) return 'hero';
+    if (a.closest('.pcard, .shop-card')) {
+      const name = a.closest('.pcard, .shop-card')?.querySelector('h3')?.textContent?.trim();
+      return name ? ('product: '+name) : 'product';
+    }
+    if (a.closest('#contact, form')) return 'contact-form';
+    if (a.closest('footer')) return 'footer';
+    return 'link';
+  }
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[href*="wa.me"], a[href*="api.whatsapp.com"]');
+    if (!a) return;
+    try {
+      const payload = JSON.stringify({
+        page: location.pathname,
+        button: labelFor(a),
+        intent: decodeURIComponent((a.href.split('text=')[1]||'')).slice(0,300),
+        referrer: document.referrer || 'direct',
+        device: (matchMedia('(hover:none)').matches || innerWidth<900) ? 'mobile' : 'desktop',
+      });
+      // sendBeacon survives the page leaving to WhatsApp
+      if (navigator.sendBeacon) navigator.sendBeacon('/api/lead', new Blob([payload], {type:'application/json'}));
+      else fetch('/api/lead', {method:'POST', body:payload, headers:{'Content-Type':'application/json'}, keepalive:true});
+    } catch(err) { /* never block the click */ }
+    // link opens normally (we don't preventDefault)
+  }, true);
+})();
+
+/* ── email obfuscation: bots ko raw email nahi, user ko normal ── */
+(function(){
+  document.querySelectorAll('.obf-mail').forEach(a=>{
+    const u=a.dataset.u, d=a.dataset.d;
+    if(!u||!d) return;
+    const email=u+'@'+d;
+    a.textContent=email;               // user ko asli email dikhe
+    a.addEventListener('click', e=>{   // click pe mailto khule
+      e.preventDefault();
+      window.location.href='mailto:'+email;
+    });
+  });
+})();

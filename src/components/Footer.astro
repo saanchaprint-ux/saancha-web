@@ -36,7 +36,7 @@ const activeSocials = socials.filter(s => (social[s.key] || '').trim());
       <div class="f-col">
         <h4>Contact</h4>
         <a href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noopener">WhatsApp us</a>
-        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <a class="obf-mail" data-u={site.email.split("@")[0]} data-d={site.email.split("@")[1]} href="#">Email us</a>
         <a href="/#contact">Send an enquiry</a>
       </div>
     </div>

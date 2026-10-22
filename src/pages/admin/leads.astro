@@ -1,0 +1,67 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import { isAdmin, supabaseAdmin, clearAdminCookie } from '../../lib/admin.js';
+if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
+
+const sb = supabaseAdmin();
+let notice='';
+if (Astro.request.method==='POST') {
+  const f=await Astro.request.formData();
+  if (f.get('action')==='logout'){ clearAdminCookie(Astro.cookies); return Astro.redirect('/admin/login'); }
+  if (f.get('action')==='clear-old'){
+    // delete leads older than 90 days
+    const d=new Date(Date.now()-90*864e5).toISOString();
+    await sb.from('leads').delete().lt('created_at', d);
+    notice='Old leads (90+ days) cleared.';
+  }
+}
+
+const { data } = await sb.from('leads').select('*').order('created_at',{ascending:false}).limit(500);
+const list = data||[];
+// simple stats
+const today = list.filter(l=> new Date(l.created_at).toDateString()===new Date().toDateString()).length;
+const week = list.filter(l=> (Date.now()-new Date(l.created_at))<7*864e5).length;
+const fmt=(d)=> new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+---
+<Base title="Admin — Leads — Saancha">
+  <main class="admin">
+    <div class="wrap">
+      <div class="admin-head"><div><span class="kicker">Saancha Admin</span><h1>Leads (WhatsApp clicks)</h1></div>
+        <form method="POST"><input type="hidden" name="action" value="logout"><button class="btn ghost">Log out</button></form></div>
+      <nav class="admin-nav">
+        <a href="/admin">Orders</a><a href="/admin/quotes">Quotes</a><a href="/admin/leads" class="on">Leads</a><a href="/admin/blog">Blog</a><a href="/admin/testimonials">Testimonials</a><a href="/admin/promo">Promo</a><a href="/admin/pricing">Pricing</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a>
+      </nav>
+      {notice && <p class="ok">{notice}</p>}
+
+      <div class="lead-stats">
+        <div class="ls-card"><b>{today}</b><span>Today</span></div>
+        <div class="ls-card"><b>{week}</b><span>Last 7 days</span></div>
+        <div class="ls-card"><b>{list.length}</b><span>Total (recent 500)</span></div>
+      </div>
+
+      <section class="admin-card">
+        <h2>Recent WhatsApp clicks</h2>
+        {list.length===0 && <p style="color:var(--fg-45)">No leads yet. Jab koi WhatsApp button dabayega, yahan entry aa jaayegi.</p>}
+        <div class="lead-table">
+          {list.map(l => (
+            <div class="lead-row">
+              <div class="lcol"><span class="mono">When</span><b>{fmt(l.created_at)}</b></div>
+              <div class="lcol"><span class="mono">Page</span><b>{l.page||'—'}</b></div>
+              <div class="lcol"><span class="mono">Button</span><b>{l.button||'—'}</b></div>
+              <div class="lcol"><span class="mono">Device</span><span class="badge2">{l.device||'—'}</span></div>
+              <div class="lcol lcol-intent"><span class="mono">Intent</span><span>{l.intent||'—'}</span></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {list.length>0 && (
+        <form method="POST" onsubmit="return confirm('Delete leads older than 90 days?')">
+          <input type="hidden" name="action" value="clear-old">
+          <button class="mini-btn">Clear leads older than 90 days</button>
+        </form>
+      )}
+    </div>
+  </main>
+</Base>
