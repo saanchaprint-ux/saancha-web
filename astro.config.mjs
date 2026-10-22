@@ -7,7 +7,11 @@ const SITE = 'https://www.saancha.in';
 export default defineConfig({
   site: SITE,
   output: 'static',
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
   integrations: [
     sitemap({
       changefreq: 'weekly',
