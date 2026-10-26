@@ -88,7 +88,8 @@ if (Astro.request.method === 'POST') {
         <p class="lede rvu">Choose product type, size, design, and quantity for an approximate cost.</p>
       </div>
 
-      <div class="calc rvu" id="calc" data-rules={rules ? JSON.stringify(rules) : ''}>
+      <script type="application/json" id="calcRules" set:html={JSON.stringify(rules || null)}></script>
+      <div class="calc rvu" id="calc">
         <!-- Step 1 product -->
         <div class="calc-step">
           <label class="calc-label"><span class="n">01</span> Product type</label>

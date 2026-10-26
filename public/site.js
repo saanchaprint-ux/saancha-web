@@ -208,7 +208,7 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
   const calc = document.getElementById('calc');
   if (!calc) return;
   let rules = null;
-  try { rules = JSON.parse(calc.dataset.rules || 'null'); } catch(e){ rules = null; }
+  try { rules = JSON.parse(document.getElementById('calcRules')?.textContent || 'null'); } catch(e){ rules = null; }
 
   const sel = { product:null, size:null, complexity:null, quantity:null, logo:false };
   const result = document.getElementById('calcResult');
