@@ -204,9 +204,11 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
 })();
 
 /* ── Custom Mould Pricing Calculator (real-time) ── */
-(function(){
+function initCalc(){
   const calc = document.getElementById('calc');
   if (!calc) return;
+  if (calc.dataset.ready) return;   // already initialised
+  calc.dataset.ready = '1';
   let rules = null;
   try { rules = JSON.parse(document.getElementById('calcRules')?.textContent || 'null'); } catch(e){ rules = null; }
 
@@ -225,8 +227,8 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
         grid.querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));
         btn.classList.add('on');
         sel[group] = btn.dataset.val;
-        if (group==='size') document.getElementById('customDims').hidden = (btn.dataset.val!=='custom');
-        if (group==='quantity') document.getElementById('customQty').hidden = (btn.dataset.val!=='custom');
+        if (group==='size'){ const cd=document.getElementById('customDims'); if(cd) cd.hidden = (btn.dataset.val!=='custom'); }
+        if (group==='quantity'){ const cq=document.getElementById('customQty'); if(cq) cq.hidden = (btn.dataset.val!=='custom'); }
         recalc();
       });
     });
@@ -296,16 +298,20 @@ document.querySelectorAll('.pass-eye').forEach(btn=>{
     const ql=document.getElementById('q-logo'); if(ql) ql.checked = sel.logo;
   }
 
-  document.getElementById('crReset').addEventListener('click', ()=>{
+  const resetBtn = document.getElementById('crReset');
+  if (resetBtn) resetBtn.addEventListener('click', ()=>{
     result.hidden = true; if(hint) hint.hidden = false;
     calc.querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));
-    document.getElementById('customDims').hidden = true;
-    document.getElementById('customQty').hidden = true;
+    const cd=document.getElementById('customDims'); if(cd) cd.hidden = true;
+    const cq=document.getElementById('customQty'); if(cq) cq.hidden = true;
     if(logoCheck) logoCheck.checked=false;
     Object.keys(sel).forEach(k=> sel[k]= k==='logo'?false:null);
-    document.getElementById('calculator').scrollIntoView({behavior:'smooth'});
+    const calcSec=document.getElementById('calculator'); if(calcSec) calcSec.scrollIntoView({behavior:'smooth'});
   });
-})();
+}
+// run now if DOM ready, else wait for it (fixes buttons not responding)
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCalc);
+else initCalc();
 
 /* ── Lead capture: WhatsApp click → save to CRM (fire-and-forget) ── */
 (function(){
