@@ -1,7 +1,7 @@
 /* Saancha — shared client JS (all pages). GSAP + Lenis loaded before this. */
 (function(){
-  const REDUCED=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const TOUCH=matchMedia('(hover:none)').matches||innerWidth<900;
+  const REDUCED=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const TOUCH=(window.matchMedia&&window.matchMedia('(hover:none)').matches)||window.innerWidth<900;
   if(window.gsap&&window.ScrollTrigger)gsap.registerPlugin(ScrollTrigger);
 
   /* smooth scroll */
@@ -110,7 +110,7 @@
   if(!TOUCH){
     const d=document.getElementById('cur'),r=document.getElementById('curR'),lbl=r&&r.querySelector('b');
     if(d&&r){
-      let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+      let mx=window.innerWidth/2,my=window.innerHeight/2,rx=mx,ry=my;
       addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;d.style.transform='translate('+mx+'px,'+my+'px)';});
       (function t(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;r.style.transform='translate('+rx+'px,'+ry+'px)';requestAnimationFrame(t);})();
       const bind=()=>document.querySelectorAll('a,button,summary,[data-cur]').forEach(el=>{
@@ -337,7 +337,7 @@ else initCalc();
         button: labelFor(a),
         intent: decodeURIComponent((a.href.split('text=')[1]||'')).slice(0,300),
         referrer: document.referrer || 'direct',
-        device: (matchMedia('(hover:none)').matches || innerWidth<900) ? 'mobile' : 'desktop',
+        device: ((window.matchMedia&&window.matchMedia('(hover:none)').matches) || window.innerWidth<900) ? 'mobile' : 'desktop',
       });
       // sendBeacon survives the page leaving to WhatsApp
       if (navigator.sendBeacon) navigator.sendBeacon('/api/lead', new Blob([payload], {type:'application/json'}));
