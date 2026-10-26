@@ -16,8 +16,11 @@
   document.querySelectorAll('a[href^="/#"],a[href^="#"]').forEach(a=>{
     const href=a.getAttribute('href');
     const hash=href.includes('#')?'#'+href.split('#')[1]:'';
-    // only intercept same-page anchors
-    if((href.startsWith('#')||href.startsWith('/#')) && document.querySelector(hash)){
+    // skip empty/placeholder hashes like href="#" (invalid selector, crashes querySelector)
+    if(!hash || hash==='#') return;
+    // only intercept same-page anchors that actually exist
+    let target=null; try{ target=document.querySelector(hash); }catch(e){ return; }
+    if((href.startsWith('#')||href.startsWith('/#')) && target){
       a.addEventListener('click',e=>{e.preventDefault();closeMenu();goTo(hash);});
     }
   });
