@@ -21,7 +21,7 @@ try {
 const user = await getUser(Astro.cookies);
 
 // handle quote submit
-let sent = false, error = '';
+let sent = false, error = '', waMsg = '';
 if (Astro.request.method === 'POST') {
   const f = await Astro.request.formData();
   const row = {
@@ -45,6 +45,22 @@ if (Astro.request.method === 'POST') {
       const { error: e } = await sb.from('quote_requests').insert(row);
       if (e) error = e.message; else sent = true;
     } catch(e) { error = 'Could not submit. Try WhatsApp instead.'; }
+  }
+  // build a WhatsApp message with all quote details (opens after submit)
+  if (sent) {
+    const lines = [
+      'Hi Saancha, I just submitted a custom mould request:',
+      `Name: ${row.name}`,
+      row.phone ? `Phone: ${row.phone}` : '',
+      row.product ? `Product: ${row.product}` : '',
+      row.size ? `Size: ${row.size}` : '',
+      row.dimensions ? `Dimensions: ${row.dimensions}` : '',
+      row.complexity ? `Design: ${row.complexity}${row.logo ? ' + logo' : ''}` : '',
+      row.quantity ? `Quantity: ${row.quantity}` : '',
+      row.estimate ? `Estimate: ${row.estimate}` : '',
+      row.details ? `Notes: ${row.details}` : '',
+    ].filter(Boolean);
+    waMsg = `https://wa.me/${wa}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 }
 ---
@@ -165,7 +181,16 @@ if (Astro.request.method === 'POST') {
       </div>
 
       {sent ? (
-        <div class="ok" style="max-width:600px">Thanks! Your request is in — we'll get back with a quote soon. You can also <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener">message us on WhatsApp</a>.</div>
+        <div class="quote-sent" style="max-width:640px">
+          <div class="ok">Thanks! Your request is in — we'll get back with a quote soon.</div>
+          <p class="lede" style="margin:18px 0">For a faster reply, send the same details to us on WhatsApp 👇</p>
+          <a href={waMsg} target="_blank" rel="noopener" class="btn" id="waQuoteBtn" data-mag data-cur="CHAT">Send details on WhatsApp</a>
+          <p class="pricenote" style="margin-top:14px">WhatsApp apne aap khul raha hai… agar na khule to upar button dabao.</p>
+          <script type="module" is:inline define:vars={{ waMsg }}>
+            // auto-open WhatsApp with the quote details
+            if (waMsg) { setTimeout(()=>{ window.open(waMsg, '_blank'); }, 800); }
+          </script>
+        </div>
       ) : (
         <div class="c-grid">
           <form class="rvu" method="POST" id="quoteForm">

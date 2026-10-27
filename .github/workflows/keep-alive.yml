@@ -1,0 +1,13 @@
+name: Keep Supabase Awake
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # har 6 ghante
+  workflow_dispatch:         # manually bhi chala sakte ho
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping site
+        run: |
+          echo "Pinging keep-alive endpoint..."
+          curl -fsS "https://www.saancha.in/api/ping" || echo "ping failed (ok, will retry next run)"
