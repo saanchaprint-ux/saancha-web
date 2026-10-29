@@ -43,10 +43,16 @@ const mats = newestProducts.length ? newestProducts.map((p, i) => ({
 })) : fallbackMats;
 
 const jsonld = {
-  "@context":"https://schema.org","@type":"LocalBusiness","name":site.name,
-  "description":"Casting molds for candles, soap, resin and concrete, designed and manufactured in Delhi.",
+  "@context":"https://schema.org","@type":["Organization","LocalBusiness"],
+  "name":site.name,"legalName":site.name,
+  "url":site.domain,
+  "logo":`${site.domain}/logo.png`,
+  "image":`${site.domain}/logo.png`,
+  "description":"Casting moulds for candles, soap, resin and concrete, designed and manufactured in Delhi.",
   "slogan":site.tagline,"email":site.email,
-  "address":{"@type":"PostalAddress","addressLocality":"Delhi","addressCountry":"IN"},"areaServed":"IN"
+  "address":{"@type":"PostalAddress","addressLocality":"Delhi","addressRegion":"Delhi","addressCountry":"IN"},
+  "areaServed":"IN",
+  "contactPoint":{"@type":"ContactPoint","contactType":"sales","email":site.email,"areaServed":"IN","availableLanguage":["en","hi"]}
 };
 ---
 <Base title="Custom Silicone Casting Moulds in Delhi | Saancha" description="Explore Saancha casting moulds for candles, soap, resin and concrete. Discover ready-made designs or request custom silicone mould manufacturing in Delhi." ogImage={heroPoster} jsonld={jsonld}>

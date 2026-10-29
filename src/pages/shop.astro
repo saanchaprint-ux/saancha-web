@@ -16,10 +16,25 @@ let shown = active==='all' ? products : products.filter(p => p.category===active
 if (sort==='low') shown = [...shown].sort((a,b)=>Number(a.price)-Number(b.price));
 if (sort==='high') shown = [...shown].sort((a,b)=>Number(b.price)-Number(a.price));
 
+// ItemList schema (SEO rich results for product listing)
+const itemListSchema = shown.length ? {
+  "@context":"https://schema.org","@type":"ItemList",
+  "itemListElement": shown.slice(0,30).map((p,i)=>({
+    "@type":"ListItem","position":i+1,
+    "item":{
+      "@type":"Product","name":p.name,
+      ...(p.image_url?{"image":p.image_url}:{}),
+      ...(p.description?{"description":p.description}:{}),
+      "category":p.category,
+      "offers":{"@type":"Offer","price":String(p.price||''),"priceCurrency":"INR","availability": (p.stock>0?"https://schema.org/InStock":"https://schema.org/PreOrder")}
+    }
+  }))
+} : null;
+
 const wa = site.whatsapp;
 const HERO = '/images/hf_20261014_020046_1e16f808-7476-4aee-ba0c-d28b6b69a551.webp';
 ---
-<Base title="Shop Silicone Casting Moulds Online | Saancha" description="Browse ready-made silicone casting moulds for candles, soap, concrete and resin. Compare designs, sizes and prices, and enquire directly with Saancha.">
+<Base title="Shop Silicone Casting Moulds Online | Saancha" description="Browse ready-made silicone casting moulds for candles, soap, concrete and resin. Compare designs, sizes and prices, and enquire directly with Saancha." jsonld={itemListSchema}>
   <Nav slot="nav" />
 
   <header class="shop-hero2">

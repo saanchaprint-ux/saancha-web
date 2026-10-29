@@ -29,7 +29,7 @@ const VID = {
 export const materialsContent = {
   candles: {
     label: "Candles",
-    seoTitle: "Candle Moulds — Custom Silicone Candle Moulds in Delhi | Saancha",
+    seoTitle: "Candle Moulds — Custom Silicone Moulds Delhi | Saancha",
     seoDesc: "Custom and ready-made silicone candle moulds, made in Delhi. Pillars, tapers, fluted shapes. No minimum order, 5–7 day turnaround, fixed shelf prices.",
     heroVideo: video("candles-hero.mp4", VID.candleHero),
     heroPoster: asset("candle.png", IMG.candle),
@@ -63,7 +63,7 @@ export const materialsContent = {
 
   soap: {
     label: "Soap & bath",
-    seoTitle: "Soap Moulds — Custom Silicone Soap & Bath Moulds in Delhi | Saancha",
+    seoTitle: "Soap Moulds — Silicone Soap & Bath Moulds | Saancha",
     seoDesc: "Custom and ready-made silicone soap and bath moulds, made in Delhi. Faceted bars, embeds, bath bombs. Food- and cosmetic-grade options, no minimum order.",
     heroVideo: video("soap-hero.mp4", VID.soapHero),
     heroPoster: asset("soap.png", IMG.soap),
@@ -97,7 +97,7 @@ export const materialsContent = {
 
   concrete: {
     label: "Concrete",
-    seoTitle: "Concrete Moulds — Silicone Moulds for Planters & Homeware | Saancha",
+    seoTitle: "Concrete Moulds — Planters & Homeware | Saancha",
     seoDesc: "Custom and ready-made two-part silicone moulds for concrete planters, trays and homeware, made in Delhi. Handles undercuts and depth. No minimum order.",
     heroVideo: video("concrete-hero.mp4", VID.concreteHero),
     heroPoster: asset("concrete.png", IMG.concrete),
@@ -131,7 +131,7 @@ export const materialsContent = {
 
   resin: {
     label: "Resin",
-    seoTitle: "Resin Moulds — High-Detail Silicone Moulds for Resin Art | Saancha",
+    seoTitle: "Resin Moulds — High-Detail Silicone Moulds | Saancha",
     seoDesc: "Custom and ready-made high-detail silicone resin moulds, made in Delhi. Coasters, jewellery, paperweights, faceted gems. Glass-smooth finish, no minimum order.",
     heroVideo: video("resin-hero.mp4", VID.resinHero),
     heroPoster: asset("resin.png", IMG.resin),
