@@ -108,8 +108,8 @@ const customSlug = c.label.toLowerCase().replace(/ & /g,'-').replace(/ /g,'-');
       </div>
       <p class="pricenote mono">Ready-made molds are fixed price. Custom molds are priced by quantity — the more you order, the lower the per-unit cost.</p>
       <div class="custombar">
-        <div><h3>Nothing here fits?</h3><p>Send a sketch, a photo, or the actual product. We build a custom {c.label.toLowerCase()} mold around it — priced by your order size.</p></div>
-        <a href={`https://wa.me/${wa}?text=Hi%2C%20I%20want%20a%20custom%20${customSlug}%20mold.`} class="btn" target="_blank" rel="noopener" data-mag>Get a custom quote</a>
+        <div><h3>Nothing here fits?</h3><p>Send a sketch, a photo, or the actual product. We build a <a href="/custom-moulds" style="color:var(--amber)">custom {c.label.toLowerCase()} mould</a> around it — priced by your order size. Or <a href="/shop" style="color:var(--amber)">shop all moulds</a>.</p></div>
+        <a href="/custom-moulds" class="btn" data-mag>Get a custom quote</a>
       </div>
     </div>
   </main>

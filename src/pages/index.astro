@@ -90,6 +90,7 @@ const jsonld = {
     <div class="wrap">
       <span class="kicker rvu" style="display:block;margin-bottom:30px">01 — What we do</span>
       <p class="big" id="stText">{c(content,"home_statement","Anyone can print plastic. We design the negative space — the exact hollow your product is born from — and cut it so precisely that every single casting comes out identical.")}</p>
+      <p class="rvu" style="margin-top:28px;color:var(--fg-70);max-width:60ch">Browse our <a href="/shop" style="color:var(--amber)">ready-made moulds</a>, request a <a href="/custom-moulds" style="color:var(--amber)">custom mould</a> for your product, or read casting tips on the <a href="/blog" style="color:var(--amber)">Saancha blog</a>.</p>
     </div>
   </section>
 
@@ -122,7 +123,10 @@ const jsonld = {
           </a>
         ))}
       </div>
-      <div class="homepage-shop-action"><a href="/shop" class="btn ghost">View all moulds →</a></div>
+      <div class="homepage-shop-action" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        <a href="/shop" class="btn ghost">Shop all moulds →</a>
+        <a href="/custom-moulds" class="btn ghost">Custom moulds →</a>
+      </div>
       {productsUnavailable && <p class="homepage-shop-notice">Shop inventory is temporarily unavailable. Category navigation is shown instead.</p>}
     </div>
   </section>
