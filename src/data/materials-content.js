@@ -29,11 +29,11 @@ const VID = {
 export const materialsContent = {
   candles: {
     label: "Candles",
-    seoTitle: "Candle Moulds — Custom Silicone Moulds Delhi | Saancha",
+    seoTitle: "Candle Moulds — Silicone Candle Moulds India | Saancha",
     seoDesc: "Custom and ready-made silicone candle moulds, made in Delhi. Pillars, tapers, fluted shapes. No minimum order, 5–7 day turnaround, fixed shelf prices.",
     heroVideo: video("candles-hero.mp4", VID.candleHero),
     heroPoster: asset("candle.png", IMG.candle),
-    hero: "Candle moulds, cast to your shape.",
+    hero: "Silicone candle moulds, cast to your shape.",
     lede: "Ready-made silicone candle moulds at fixed prices, or a custom mold built around your own design. Wax releases clean, every rib intact — pull after pull.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["100s","Pulls per mold"]],
     whyH: "Made for wax.",
@@ -63,11 +63,11 @@ export const materialsContent = {
 
   soap: {
     label: "Soap & bath",
-    seoTitle: "Soap Moulds — Silicone Soap & Bath Moulds | Saancha",
+    seoTitle: "Soap Moulds — Silicone Soap Moulds India | Saancha",
     seoDesc: "Custom and ready-made silicone soap and bath moulds, made in Delhi. Faceted bars, embeds, bath bombs. Food- and cosmetic-grade options, no minimum order.",
     heroVideo: video("soap-hero.mp4", VID.soapHero),
     heroPoster: asset("soap.png", IMG.soap),
-    hero: "Soap moulds with crisp edges.",
+    hero: "Silicone soap moulds with crisp edges.",
     lede: "Ready-made soap and bath moulds at fixed prices, or custom moulds built around your bar. Sharp facets that stay defined through curing and clean release.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["Food","Safe options"]],
     whyH: "Crisp edges, every batch.",
@@ -97,11 +97,11 @@ export const materialsContent = {
 
   concrete: {
     label: "Concrete",
-    seoTitle: "Concrete Moulds — Planters & Homeware | Saancha",
+    seoTitle: "Concrete Moulds — Silicone Planter Moulds India | Saancha",
     seoDesc: "Custom and ready-made two-part silicone moulds for concrete planters, trays and homeware, made in Delhi. Handles undercuts and depth. No minimum order.",
     heroVideo: video("concrete-hero.mp4", VID.concreteHero),
     heroPoster: asset("concrete.png", IMG.concrete),
-    hero: "Concrete moulds, built for depth.",
+    hero: "Concrete moulds for planters & homeware.",
     lede: "Ready-made concrete moulds at fixed prices, or custom on request. Two-part silicone that survives rough mixes and releases a clean, smooth face.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["2-part","Undercut ready"]],
     whyH: "Built for weight and depth.",
@@ -131,11 +131,11 @@ export const materialsContent = {
 
   resin: {
     label: "Resin",
-    seoTitle: "Resin Moulds — High-Detail Silicone Moulds | Saancha",
+    seoTitle: "Resin Moulds — Silicone Resin Art Moulds India | Saancha",
     seoDesc: "Custom and ready-made high-detail silicone resin moulds, made in Delhi. Coasters, jewellery, paperweights, faceted gems. Glass-smooth finish, no minimum order.",
     heroVideo: video("resin-hero.mp4", VID.resinHero),
     heroPoster: asset("resin.png", IMG.resin),
-    hero: "Resin moulds, detail you see through.",
+    hero: "Silicone resin moulds, detail you see through.",
     lede: "Ready-made resin moulds at fixed prices, or a custom mold around your piece. Glass-smooth surfaces and razor facets that read perfectly through clear resin.",
     facts: [["No","Minimum order"],["5–7","Day custom build"],["High","Detail transfer"]],
     whyH: "Detail you can see through.",

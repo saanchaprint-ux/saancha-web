@@ -23,6 +23,10 @@ export default defineConfig({
         `${SITE}/blog/silicone-vs-3d-printed-moulds`,
         `${SITE}/blog/make-sharp-handmade-soap-bars`,
         `${SITE}/blog/concrete-homeware-moulds-guide`,
+        `${SITE}/blog/how-to-make-concrete-planters-at-home`,
+        `${SITE}/blog/best-silicone-for-candle-moulds`,
+        `${SITE}/blog/start-a-candle-business-moulds-guide`,
+        `${SITE}/blog/how-to-get-sharp-edges-handmade-soap`,
       ],
       filter: (page) =>
         !page.includes('/admin') &&
