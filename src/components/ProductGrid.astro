@@ -11,15 +11,15 @@ const inr = (n)=> '₹'+Number(n).toLocaleString('en-IN');
     const msg = encodeURIComponent(`Hi, I want to enquire about ${p.name} (SKU: ${p.base_sku}).`);
     return (
       <article class={`pcard shop-card${out?' is-out':''}`}>
-        <div class="shot">
+        <a class="shot" href={`/product/${p.slug}`} aria-label={p.name}>
           {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" /> : <div class="shop-placeholder">SAANCHA</div>}
           {hasMrp && <span class="badge-save">Save {off}%</span>}
           <span class={`badge-stock${out?' out':''}`}>{out ? 'Made to order' : 'In stock'}</span>
-          <a class="card-view" href={`https://wa.me/${site.whatsapp}?text=${msg}`} target="_blank" rel="noopener">Quick enquire</a>
-        </div>
+          <span class="card-view">View details</span>
+        </a>
         <div class="b">
           <span class="mono cat">{p.category}</span>
-          <h3>{p.name}</h3>
+          <h3><a href={`/product/${p.slug}`} style="color:inherit;text-decoration:none">{p.name}</a></h3>
           {p.description && <span class="meta">{p.description}</span>}
           <div class="row">
             <span class="price">
@@ -27,7 +27,7 @@ const inr = (n)=> '₹'+Number(n).toLocaleString('en-IN');
               {hasMrp && <s class="mrp">{inr(p.mrp)}</s>}
               <small>Ready-made</small>
             </span>
-            <a class="enq" href={`https://wa.me/${site.whatsapp}?text=${msg}`} target="_blank" rel="noopener">Enquire →</a>
+            <a class="enq" href={`/product/${p.slug}`}>View →</a>
           </div>
         </div>
       </article>

@@ -1,0 +1,102 @@
+---
+export const prerender = false;
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { supabaseAdmin } from '../../lib/admin.js';
+import { site } from '../../data/site.js';
+
+const { slug } = Astro.params;
+let p = null;
+try {
+  const { data } = await supabaseAdmin().from('cms_products')
+    .select('*').eq('slug', slug).eq('status','published').single();
+  p = data;
+} catch(e) { p = null; }
+if (!p) return Astro.redirect('/shop', 302);
+
+const inr = (n)=> '₹'+Number(n).toLocaleString('en-IN');
+const imgs = (Array.isArray(p.images) && p.images.length) ? p.images : (p.image_url?[p.image_url]:[]);
+const bulk = Array.isArray(p.bulk_tiers) ? p.bulk_tiers : [];
+const out = !(p.stock>0);
+const wa = site.whatsapp;
+const msg = encodeURIComponent(`Hi, I want to enquire about ${p.name} (SKU: ${p.base_sku}).`);
+
+const jsonld = {
+  "@context":"https://schema.org","@type":"Product",
+  "name":p.name, "sku":p.base_sku,
+  ...(imgs.length?{"image":imgs}:{}),
+  ...(p.description?{"description":p.description}:{}),
+  "category":p.category,
+  "offers":{"@type":"Offer","price":String(p.price||''),"priceCurrency":"INR",
+    "availability": out?"https://schema.org/PreOrder":"https://schema.org/InStock",
+    "url":`${site.domain}/product/${p.slug}`}
+};
+---
+<Base title={`${p.name} — ${p.category} mould | Saancha`} description={p.description || `${p.name} — silicone casting mould by Saancha, Delhi.`} ogImage={imgs[0]} jsonld={jsonld}>
+  <Nav slot="nav" />
+  <main class="pdp">
+    <div class="wrap">
+      <div class="pdp-crumb mono"><a href="/">Home</a> / <a href="/shop">Shop</a> / <a href={`/shop?category=${p.category}`}>{p.category}</a> / {p.name}</div>
+
+      <div class="pdp-grid">
+        <div class="pdp-gallery">
+          <div class="pdp-main"><img id="pdpMain" src={imgs[0]||''} alt={p.name} /></div>
+          {imgs.length>1 && (
+            <div class="pdp-thumbs">
+              {imgs.map((src,i)=>(
+                <button type="button" class={`pdp-thumb${i===0?' on':''}`} data-src={src}><img src={src} alt={`${p.name} photo ${i+1}`} loading="lazy"/></button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div class="pdp-info">
+          <span class="mono pdp-cat">{p.category}</span>
+          <h1>{p.name}</h1>
+          <div class="pdp-sku mono">SKU: {p.base_sku}</div>
+          <div class="pdp-price">{inr(p.price)} <small>/ unit</small>
+            <span class={`pdp-stock${out?' out':''}`}>{out?'Made to order':'In stock'}</span>
+          </div>
+          {p.dimensions && <div class="pdp-dims"><span class="mono">Dimensions</span> {p.dimensions}</div>}
+
+          {bulk.length>0 && (
+            <div class="pdp-bulk">
+              <span class="mono">Bulk pricing</span>
+              <table>
+                <thead><tr><th>Quantity</th><th>Price / unit</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td>{inr(p.price)}</td></tr>
+                  {bulk.map(t=> <tr><td>{t.qty}+</td><td>{inr(t.price)}</td></tr>)}
+                </tbody>
+              </table>
+              <p class="mono pdp-note">More you order, lower the per-unit price.</p>
+            </div>
+          )}
+
+          {p.description && <p class="pdp-desc">{p.description}</p>}
+
+          <div class="pdp-cta">
+            <a href={`https://wa.me/${wa}?text=${msg}`} target="_blank" rel="noopener" class="btn" data-mag data-cur="CHAT">Enquire on WhatsApp</a>
+            <a href="/custom-moulds" class="btn ghost" data-mag>Need custom?</a>
+          </div>
+          <p class="pdp-trust mono">No minimum order · 5–7 day turnaround · Made in Delhi</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <Footer slot="footer" />
+
+  <script is:inline>
+    (function(){
+      const main=document.getElementById('pdpMain');
+      document.querySelectorAll('.pdp-thumb').forEach(t=>{
+        t.addEventListener('click',()=>{
+          document.querySelectorAll('.pdp-thumb').forEach(x=>x.classList.remove('on'));
+          t.classList.add('on');
+          if(main) main.src=t.dataset.src;
+        });
+      });
+    })();
+  </script>
+</Base>

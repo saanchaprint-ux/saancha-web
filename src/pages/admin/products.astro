@@ -2,19 +2,46 @@
 export const prerender = false;
 import Base from '../../layouts/Base.astro';
 import { isAdmin, supabaseAdmin } from '../../lib/admin.js';
+import { compressImage } from '../../lib/imgcompress.js';
 if (!isAdmin(Astro.cookies)) return Astro.redirect('/admin/login');
 const sb = supabaseAdmin();
 let notice = '';
 const str=(f,k)=>String(f.get(k)||'').trim();
 const categories=['candles','soap','concrete','resin'];
+// upload a square product image, return URL (or '')
+async function uploadSquare(file){
+  if(!file||!file.size) return '';
+  const { buffer, contentType, ext } = await compressImage(file, { maxWidth:1200, quality:82, square:true });
+  const path=`product-${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+  const { error }=await sb.storage.from('site-images').upload(path, buffer, { contentType, upsert:true });
+  if(error) return '';
+  return sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;
+}
 if (Astro.request.method==='POST') {
  const f=await Astro.request.formData(); const action=str(f,'action'); const id=str(f,'id');
  if (action==='publish' && id) { const {error}=await sb.from('cms_products').update({status:'published',updated_at:new Date().toISOString()}).eq('id',id); notice=error?'Error: '+error.message:'Product published. Open /shop to view it.'; }
  if (action==='unpublish' && id) { const {error}=await sb.from('cms_products').update({status:'draft',updated_at:new Date().toISOString()}).eq('id',id); notice=error?'Error: '+error.message:'Product unpublished.'; }
  if (action==='save') {
-  const row={name:str(f,'name'),slug:str(f,'slug').toLowerCase(),category:str(f,'category'),base_sku:str(f,'base_sku').toUpperCase(),description:str(f,'description'),image_url:str(f,'image_url'),price:Number(str(f,'price')||0),stock:Number(str(f,'stock')||0),status:str(f,'status'),sort:Number(str(f,'sort')||100),updated_at:new Date().toISOString()};
+  // existing (for keeping old images if no new upload)
+  let existing=null; if(id){ const {data}=await sb.from('cms_products').select('*').eq('id',id).single(); existing=data; }
+  // 4 image uploads (img0..img3) — keep old if not replaced
+  const oldImgs = Array.isArray(existing?.images) ? existing.images : [];
+  const images=[];
+  for(let i=0;i<4;i++){
+    const up = await uploadSquare(f.get('img'+i));
+    images.push(up || oldImgs[i] || '');
+  }
+  const cleanImgs = images.filter(Boolean);
+  // bulk tiers: qty0/price0 .. qty4/price4
+  const bulk=[];
+  for(let i=0;i<5;i++){
+    const q=Number(str(f,'qty'+i)), p=Number(str(f,'bprice'+i));
+    if(q>0 && p>0) bulk.push({qty:q, price:p});
+  }
+  bulk.sort((a,b)=>a.qty-b.qty);
+  const row={name:str(f,'name'),slug:str(f,'slug').toLowerCase(),category:str(f,'category'),base_sku:str(f,'base_sku').toUpperCase(),description:str(f,'description'),dimensions:str(f,'dimensions')||null,image_url:cleanImgs[0]||str(f,'image_url'),images:cleanImgs,bulk_tiers:bulk,price:Number(str(f,'price')||0),stock:Number(str(f,'stock')||0),status:str(f,'status'),sort:Number(str(f,'sort')||100),updated_at:new Date().toISOString()};
   if (!row.name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.slug) || !/^[A-Z0-9_-]+$/.test(row.base_sku) || !categories.includes(row.category) || !['draft','published','archived'].includes(row.status) || !Number.isInteger(row.stock) || row.stock<0 || !Number.isFinite(row.price) || row.price<0) notice='Error: Invalid product fields.';
-  else { if(id) { const {data:old}=await sb.from('cms_products').select('*').eq('id',id).single(); if(old) await sb.from('cms_revisions').insert({entity:'product',entity_id:id,snapshot:old}); }
+  else { if(id && existing) { await sb.from('cms_revisions').insert({entity:'product',entity_id:id,snapshot:existing}); }
    const {error}=id ? await sb.from('cms_products').update(row).eq('id',id) : await sb.from('cms_products').insert(row);
    notice=error?'Error: '+error.message:'Product saved.'; }
  }
@@ -33,13 +60,39 @@ const edit=(products||[]).find(p=>p.id===Astro.url.searchParams.get('edit'));
  <nav class="admin-nav"><a href="/admin/studio" style="border-color:#e9a65e;color:#e9a65e">✦ Visual Studio</a><a href="/admin">Orders</a><a href="/admin/content">Content</a><a href="/admin/blocks">Sections</a><a href="/admin/products" class="on">Products</a><a href="/admin/media">Media</a><a href="/admin/settings">Settings</a></nav>
  {loadError && <p class="err">Database upgrade required: {loadError.message}. Run db/cms-upgrade.sql.</p>}
  {notice && <p class={notice.startsWith('Error')?'err':'ok'}>{notice}</p>}
- <p class="shop-helper">Products become visible on <a href="/shop" target="_blank" rel="noopener">Shop ↗</a> and their material pages when their status is <strong>Published</strong>. Drafts stay hidden. New items appear without rebuilding the website.</p><section class="admin-card"><h2>{edit?'Edit product':'Add product'}</h2><form method="POST" class="admin-form">
+ <p class="shop-helper">Products become visible on <a href="/shop" target="_blank" rel="noopener">Shop ↗</a> and their material pages when their status is <strong>Published</strong>. Drafts stay hidden. New items appear without rebuilding the website.</p><section class="admin-card"><h2>{edit?'Edit product':'Add product'}</h2><form method="POST" class="admin-form" enctype="multipart/form-data">
  <input type="hidden" name="action" value="save"/><input type="hidden" name="id" value={edit?.id||''}/>
- <div class="ag"><label>Name<input name="name" required value={edit?.name||''}/></label><label>Slug<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={edit?.slug||''}/></label></div>
- <div class="ag"><label>Category<select name="category">{categories.map(x=><option selected={edit?.category===x} value={x}>{x}</option>)}</select></label><label>Primary SKU<input name="base_sku" required value={edit?.base_sku||''}/></label></div>
- <label>Description<textarea name="description" rows="3">{edit?.description||''}</textarea></label><label>Image URL (copy from Media library)<input type="url" name="image_url" value={edit?.image_url||''}/></label>
- {edit?.image_url && <img src={edit.image_url} alt="Preview" style="width:130px;max-height:130px;object-fit:cover"/>}
- <div class="ag"><label>Price (₹)<input type="number" min="0" step="0.01" name="price" required value={edit?.price??0}/></label><label>Stock<input type="number" min="0" step="1" name="stock" required value={edit?.stock??0}/></label><label>Sort<input type="number" name="sort" value={edit?.sort??100}/></label></div>
+ <div class="ag"><label>Name<input name="name" required value={edit?.name||''}/></label><label>Slug (URL)<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={edit?.slug||''}/></label></div>
+ <div class="ag"><label>Category<select name="category">{categories.map(x=><option selected={edit?.category===x} value={x}>{x}</option>)}</select></label><label>SKU<input name="base_sku" required value={edit?.base_sku||''}/></label><label>Dimensions<input name="dimensions" placeholder="e.g. 3 × 3 × 4 in" value={edit?.dimensions||''}/></label></div>
+ <label>Description<textarea name="description" rows="3">{edit?.description||''}</textarea></label>
+
+ <div class="prod-images">
+   <label style="margin-bottom:8px;display:block">Product photos (4) — square auto-crop, upload direct</label>
+   <div class="ag">
+     {[0,1,2,3].map(i=>(
+       <div class="prod-img-slot">
+         {edit?.images?.[i] && <img src={edit.images[i]} alt={`Photo ${i+1}`} />}
+         <input type="file" name={`img${i}`} accept="image/*"/>
+         <span class="mono">Photo {i+1}{i===0?' (main)':''}</span>
+       </div>
+     ))}
+   </div>
+   <p class="mono" style="color:var(--fg-45)">Jo slot khaali chhodoge, purani photo rahegi. Pehli photo card + page pe main dikhegi.</p>
+ </div>
+
+ <div class="ag"><label>Single price (₹)<input type="number" min="0" step="0.01" name="price" required value={edit?.price??0}/></label><label>Stock<input type="number" min="0" step="1" name="stock" required value={edit?.stock??0}/></label><label>Sort<input type="number" name="sort" value={edit?.sort??100}/></label></div>
+
+ <div class="bulk-tiers">
+   <label style="margin-bottom:8px;display:block">Bulk pricing (per unit at quantity) — up to 5 tiers, flexible</label>
+   {[0,1,2,3,4].map(i=>{ const t=edit?.bulk_tiers?.[i]; return (
+     <div class="ag bulk-row">
+       <label>Qty<input type="number" min="1" name={`qty${i}`} placeholder={i===0?'10':''} value={t?.qty||''}/></label>
+       <label>Price/unit (₹)<input type="number" min="0" step="0.01" name={`bprice${i}`} value={t?.price||''}/></label>
+     </div>
+   )})}
+   <p class="mono" style="color:var(--fg-45)">Example: Qty 10 → ₹850, Qty 50 → ₹720. Khaali rows ignore honge.</p>
+ </div>
+
  <label>Status<select name="status">{['draft','published','archived'].map(x=><option value={x} selected={(edit?.status||'draft')===x}>{x}</option>)}</select></label>
  <button class="btn">{edit?'Save changes':'Create product'}</button>{edit && <a class="mini-btn" href="/admin/products">Cancel edit</a>}
  </form></section>
