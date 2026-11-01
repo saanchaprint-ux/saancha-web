@@ -2,7 +2,7 @@ import { supabaseAdmin } from './admin.js';
 
 // Storefront products — published only, newest first.
 // mrp is optional: if the column doesn't exist yet, we retry without it so the shop never breaks.
-const BASE = 'id,name,slug,description,image_url,category,base_sku,price,stock,created_at';
+const BASE = 'id,name,slug,description,image_url,images,category,base_sku,price,stock,created_at';
 
 export async function publishedProducts(limit) {
   const run = async (fields) => {

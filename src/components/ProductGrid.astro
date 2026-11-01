@@ -12,7 +12,17 @@ const inr = (n)=> '₹'+Number(n).toLocaleString('en-IN');
     return (
       <article class={`pcard shop-card${out?' is-out':''}`}>
         <a class="shot" href={`/product/${p.slug}`} aria-label={p.name}>
-          {p.image_url ? <img src={p.image_url} alt={p.name} loading="lazy" /> : <div class="shop-placeholder">SAANCHA</div>}
+          {(() => {
+            const arr = Array.isArray(p.images) ? p.images.map(x=> typeof x==='string'?{url:x,alt:p.name}:{url:x?.url,alt:x?.alt||p.name}).filter(x=>x.url) : [];
+            const img1 = arr[0]?.url || p.image_url;
+            const img2 = arr[1]?.url;
+            return img1
+              ? <>
+                  <img class="shot-primary" src={img1} alt={arr[0]?.alt||p.name} loading="lazy" />
+                  {img2 && <img class="shot-secondary" src={img2} alt={arr[1]?.alt||p.name} loading="lazy" />}
+                </>
+              : <div class="shop-placeholder">SAANCHA</div>;
+          })()}
           {hasMrp && <span class="badge-save">Save {off}%</span>}
           <span class={`badge-stock${out?' out':''}`}>{out ? 'Made to order' : 'In stock'}</span>
           <span class="card-view">View details</span>

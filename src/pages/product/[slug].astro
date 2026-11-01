@@ -16,7 +16,9 @@ try {
 if (!p) return Astro.redirect('/shop', 302);
 
 const inr = (n)=> '₹'+Number(n).toLocaleString('en-IN');
-const imgs = (Array.isArray(p.images) && p.images.length) ? p.images : (p.image_url?[p.image_url]:[]);
+// normalize images: old ["url"] or new [{url,alt}]
+const rawImgs = (Array.isArray(p.images) && p.images.length) ? p.images : (p.image_url?[p.image_url]:[]);
+const imgs = rawImgs.map((x,i)=> typeof x==='string'?{url:x,alt:`${p.name} — photo ${i+1}`}:{url:x?.url||'',alt:x?.alt||`${p.name} — photo ${i+1}`}).filter(x=>x.url);
 const bulk = Array.isArray(p.bulk_tiers) ? p.bulk_tiers : [];
 const out = !(p.stock>0);
 const wa = site.whatsapp;
@@ -25,7 +27,7 @@ const msg = encodeURIComponent(`Hi, I want to enquire about ${p.name} (SKU: ${p.
 const jsonld = {
   "@context":"https://schema.org","@type":"Product",
   "name":p.name, "sku":p.base_sku,
-  ...(imgs.length?{"image":imgs}:{}),
+  ...(imgs.length?{"image":imgs.map(i=>i.url)}:{}),
   ...(p.description?{"description":p.description}:{}),
   "category":p.category,
   "offers":{"@type":"Offer","price":String(p.price||''),"priceCurrency":"INR",
@@ -41,11 +43,11 @@ const jsonld = {
 
       <div class="pdp-grid">
         <div class="pdp-gallery">
-          <div class="pdp-main"><img id="pdpMain" src={imgs[0]||''} alt={p.name} /></div>
+          <div class="pdp-main" id="pdpZoom"><img id="pdpMain" src={imgs[0]?.url||''} alt={imgs[0]?.alt||p.name} /></div>
           {imgs.length>1 && (
             <div class="pdp-thumbs">
-              {imgs.map((src,i)=>(
-                <button type="button" class={`pdp-thumb${i===0?' on':''}`} data-src={src}><img src={src} alt={`${p.name} photo ${i+1}`} loading="lazy"/></button>
+              {imgs.map((im,i)=>(
+                <button type="button" class={`pdp-thumb${i===0?' on':''}`} data-src={im.url} data-alt={im.alt}><img src={im.url} alt={im.alt} loading="lazy"/></button>
               ))}
             </div>
           )}
@@ -90,13 +92,25 @@ const jsonld = {
   <script is:inline>
     (function(){
       const main=document.getElementById('pdpMain');
+      const zoom=document.getElementById('pdpZoom');
       document.querySelectorAll('.pdp-thumb').forEach(t=>{
         t.addEventListener('click',()=>{
           document.querySelectorAll('.pdp-thumb').forEach(x=>x.classList.remove('on'));
           t.classList.add('on');
-          if(main) main.src=t.dataset.src;
+          if(main){ main.src=t.dataset.src; if(t.dataset.alt) main.alt=t.dataset.alt; }
+          main.style.transform='scale(1)'; // reset zoom on switch
         });
       });
+      // zoom on hover (desktop) — move origin with cursor
+      if(zoom && main && !matchMedia('(hover:none)').matches){
+        zoom.addEventListener('mousemove',e=>{
+          const r=zoom.getBoundingClientRect();
+          const x=((e.clientX-r.left)/r.width)*100, y=((e.clientY-r.top)/r.height)*100;
+          main.style.transformOrigin=`${x}% ${y}%`;
+          main.style.transform='scale(2)';
+        });
+        zoom.addEventListener('mouseleave',()=>{ main.style.transform='scale(1)'; });
+      }
     })();
   </script>
 </Base>
