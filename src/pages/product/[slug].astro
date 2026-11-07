@@ -35,7 +35,8 @@ const jsonld = {
     "url":`${site.domain}/product/${p.slug}`}
 };
 ---
-<Base title={`${p.name} — ${p.category} mould | Saancha`} description={p.description || `${p.name} — silicone casting mould by Saancha, Delhi.`} ogImage={imgs[0]} jsonld={jsonld}>
+{/* SEO: ensure a 120-160 char meta description even if product desc is short */}
+<Base title={`${p.name} — ${p.category} mould | Saancha`} description={`${p.name} — premium silicone ${p.category} mould by Saancha, Delhi. Clean release, crisp detail, no minimum order. ${p.dimensions?('Size: '+p.dimensions+'. '):''}Enquire for bulk pricing.`.slice(0,158)} ogImage={imgs[0]?.url} jsonld={jsonld}>
   <Nav slot="nav" />
   <main class="pdp">
     <div class="wrap">

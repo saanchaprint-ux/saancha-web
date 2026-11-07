@@ -14,10 +14,10 @@ export async function POST({ request, cookies }) {
     const { buffer, contentType, ext } = await compressImage(file, { maxWidth:1600, quality:80 });
     const path = `blog-body-${Date.now()}.${ext}`;
     const { error } = await sb.storage.from('site-images').upload(path, buffer, { contentType, upsert:true });
-    if (error) return new Response(JSON.stringify({ error:error.message }), { status:500 });
+    if (error) { console.error('[upload]', error.message); return new Response(JSON.stringify({ error:'Upload failed. Please try again.' }), { status:500 }); }
     const url = sb.storage.from('site-images').getPublicUrl(path).data.publicUrl;
     return new Response(JSON.stringify({ url }), { status:200, headers:{'Content-Type':'application/json'} });
   } catch(e) {
-    return new Response(JSON.stringify({ error:String(e) }), { status:500 });
+    console.error('[upload]', e); return new Response(JSON.stringify({ error:'Upload failed. Please try again.' }), { status:500 });
   }
 }

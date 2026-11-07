@@ -43,8 +43,8 @@ if (Astro.request.method === 'POST') {
     try {
       const sb = supabaseAuth();
       const { error: e } = await sb.from('quote_requests').insert(row);
-      if (e) error = e.message; else sent = true;
-    } catch(e) { error = 'Could not submit. Try WhatsApp instead.'; }
+      if (e) { console.error('[quote submit]', e.message); error = 'Could not submit your request. Please try again or message us on WhatsApp.'; } else sent = true;
+    } catch(e) { console.error('[quote submit]', e); error = 'Could not submit your request. Please try again or message us on WhatsApp.'; }
   }
   // build a WhatsApp message with all quote details (opens after submit)
   if (sent) {
