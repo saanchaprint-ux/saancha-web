@@ -3,7 +3,8 @@
 ## Changes
 - Canonical website domain set to `https://www.saancha.in` in `src/data/site.js` and `astro.config.mjs`.
 - `robots.txt` points to `https://www.saancha.in/sitemap.xml`.
-- `/sitemap.xml` is statically generated at build time to avoid SSR dependency on Googlebot requests. XML includes only known public routes: home, shop, custom moulds, and materials categories.
+- `/sitemap.xml` is served by the Astro server route so it can include all published product and blog URLs from Supabase as well as the public landing pages.
+- Do not add a `public/sitemap.xml` file: static files take precedence over the Astro sitemap route on Vercel and would hide the dynamic sitemap.
 - Existing frontend and admin were not redesigned.
 
 ## Deploy and verify
@@ -15,6 +16,6 @@
 6. URL inspect `https://www.saancha.in/shop` and use Test Live URL. Indexing is not guaranteed.
 
 ## Important
-- XML sitemap lists current publicly routable pages. No per-product detail URLs exist in this version; do not invent product URLs.
-- Static XML requires a site rebuild when adding *new routable pages*, but product records displayed on `/shop` do not require a sitemap change.
+- XML sitemap lists the current public landing pages and all published product and blog detail URLs. Admin, account and authentication routes are intentionally excluded.
+- Update the public landing-page list in `src/pages/sitemap.xml.js` when adding a new public page route.
 - If Search Console still reports `Could not fetch`, check its response status, CDN/firewall/bot restrictions, and XML response headers as seen by Googlebot.

@@ -1,10 +1,32 @@
-// Dynamic sitemap — static pages + all published products + blog posts (from DB).
 import { supabaseAdmin } from '../lib/admin.js';
 import { site } from '../data/site.js';
 
 export const prerender = false;
 
-const SITE = 'https://www.saancha.in';
+const SITE = site.domain.replace(/\/+$/, '');
+const PAGE_SIZE = 1000;
+const escapeXml = (value) => String(value).replace(/[<>&'"]/g, (char) => ({
+  '<': '&lt;',
+  '>': '&gt;',
+  '&': '&amp;',
+  "'": '&apos;',
+  '"': '&quot;',
+})[char]);
+const lastmod = (value) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? undefined : date.toISOString().slice(0, 10);
+};
+
+async function fetchAllPages(queryForPage, label) {
+  const rows = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await queryForPage().range(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(`${label} query failed: ${error.message}`);
+    rows.push(...(data || []));
+    if (!data || data.length < PAGE_SIZE) return rows;
+  }
+}
 
 export async function GET() {
   const urls = [
@@ -20,25 +42,46 @@ export async function GET() {
 
   try {
     const sb = supabaseAdmin();
-    // products
-    const { data: products } = await sb.from('cms_products')
-      .select('slug,updated_at').eq('status','published');
-    (products||[]).forEach(p => urls.push({
-      loc: `${SITE}/product/${p.slug}`, pri: '0.7', freq: 'weekly',
-      lastmod: p.updated_at ? new Date(p.updated_at).toISOString().slice(0,10) : undefined
-    }));
-    // blog posts
-    const { data: posts } = await sb.from('blog_posts')
-      .select('slug,published_at').eq('published', true);
-    (posts||[]).forEach(b => urls.push({
-      loc: `${SITE}/blog/${b.slug}`, pri: '0.6', freq: 'monthly',
-      lastmod: b.published_at ? new Date(b.published_at).toISOString().slice(0,10) : undefined
-    }));
-  } catch(e) { console.error('[sitemap] DB load failed:', e?.message || e); }
+    const [products, posts] = await Promise.all([
+      fetchAllPages(
+        () => sb.from('cms_products').select('slug,updated_at').eq('status', 'published'),
+        'Published products',
+      ),
+      fetchAllPages(
+        () => sb.from('blog_posts').select('slug,published_at').eq('published', true),
+        'Published blog posts',
+      ),
+    ]);
+
+    products.forEach((product) => {
+      if (!product.slug) return;
+      urls.push({
+        loc: `${SITE}/product/${encodeURIComponent(product.slug)}`,
+        pri: '0.7',
+        freq: 'weekly',
+        lastmod: lastmod(product.updated_at),
+      });
+    });
+    posts.forEach((post) => {
+      if (!post.slug) return;
+      urls.push({
+        loc: `${SITE}/blog/${encodeURIComponent(post.slug)}`,
+        pri: '0.6',
+        freq: 'monthly',
+        lastmod: lastmod(post.published_at),
+      });
+    });
+  } catch (error) {
+    console.error('[sitemap] Failed to load published content:', error);
+    return new Response('Sitemap temporarily unavailable', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+  }
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u=>`  <url><loc>${u.loc}</loc>${u.lastmod?`<lastmod>${u.lastmod}</lastmod>`:''}<changefreq>${u.freq}</changefreq><priority>${u.pri}</priority></url>`).join('\n')}
+${urls.map((url) => `  <url><loc>${escapeXml(url.loc)}</loc>${url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : ''}<changefreq>${url.freq}</changefreq><priority>${url.pri}</priority></url>`).join('\n')}
 </urlset>`;
 
   return new Response(body, {

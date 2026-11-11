@@ -1,7 +1,7 @@
 # Saancha favicon and sitemap fix
 
-- The `/sitemap.xml` file is now directly served from `public/sitemap.xml`. It does not depend on Supabase, a serverless function, or the Astro sitemap route.
-- All seven known public pages use the `https://www.saancha.in` canonical origin. Dynamic products should only be added to the sitemap once actual indexable product-detail URLs exist.
+- The `/sitemap.xml` endpoint is served by the Astro Vercel route and includes the public landing pages plus published products and blog posts from Supabase.
+- Sitemap URLs use the canonical `https://www.saancha.in` origin. Do not add a static `public/sitemap.xml`, because it shadows the dynamic route.
 - The site's canonical-domain code and robots.txt already use the www version.
 - Logo-derived favicon files are in `public/`. A dark favicon background improves contrast of the Saancha orange emblem; the full original uploaded logo is kept as `public/saancha-logo-original.png`.
 
