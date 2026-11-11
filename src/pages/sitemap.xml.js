@@ -1,5 +1,5 @@
 // Dynamic sitemap — static pages + all published products + blog posts (from DB).
-import { supabaseAuth } from '../lib/supabase.js';
+import { supabaseAdmin } from '../lib/admin.js';
 import { site } from '../data/site.js';
 
 export const prerender = false;
@@ -19,7 +19,7 @@ export async function GET() {
   ];
 
   try {
-    const sb = supabaseAuth();
+    const sb = supabaseAdmin();
     // products
     const { data: products } = await sb.from('cms_products')
       .select('slug,updated_at').eq('status','published');
