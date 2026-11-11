@@ -24,15 +24,32 @@ const out = !(p.stock>0);
 const wa = site.whatsapp;
 const msg = encodeURIComponent(`Hi, I want to enquire about ${p.name} (SKU: ${p.base_sku}).`);
 
+// price as a clean number (Google rejects empty/0 price in Offer)
+const priceNum = Number(p.price) > 0 ? Number(p.price) : null;
+// priceValidUntil — Google likes a future date
+const validUntil = new Date(Date.now() + 365*864e5).toISOString().slice(0,10);
+const metaDesc = (p.description && p.description.length>50)
+  ? p.description
+  : `${p.name} — premium silicone ${p.category} mould by Saancha, Delhi. Clean release, crisp detail, no minimum order.${p.dimensions?(' Size: '+p.dimensions+'.'):''}`;
+
 const jsonld = {
   "@context":"https://schema.org","@type":"Product",
   "name":p.name, "sku":p.base_sku,
+  "mpn":p.base_sku,
+  "brand":{"@type":"Brand","name":"Saancha"},
   ...(imgs.length?{"image":imgs.map(i=>i.url)}:{}),
-  ...(p.description?{"description":p.description}:{}),
+  "description": metaDesc,
   "category":p.category,
-  "offers":{"@type":"Offer","price":String(p.price||''),"priceCurrency":"INR",
-    "availability": out?"https://schema.org/PreOrder":"https://schema.org/InStock",
-    "url":`${site.domain}/product/${p.slug}`}
+  ...(priceNum ? {
+    "offers":{"@type":"Offer",
+      "price": priceNum,
+      "priceCurrency":"INR",
+      "priceValidUntil": validUntil,
+      "availability": out?"https://schema.org/PreOrder":"https://schema.org/InStock",
+      "itemCondition":"https://schema.org/NewCondition",
+      "url":`${site.domain}/product/${p.slug}`,
+      "seller":{"@type":"Organization","name":"Saancha"}}
+  } : {})
 };
 ---
 {/* SEO: ensure a 120-160 char meta description even if product desc is short */}
