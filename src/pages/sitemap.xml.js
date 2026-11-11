@@ -1,5 +1,5 @@
 // Dynamic sitemap — static pages + all published products + blog posts (from DB).
-import { supabaseAdmin } from '../lib/admin.js';
+import { supabaseAuth } from '../lib/supabase.js';
 import { site } from '../data/site.js';
 
 export const prerender = false;
@@ -19,7 +19,7 @@ export async function GET() {
   ];
 
   try {
-    const sb = supabaseAdmin();
+    const sb = supabaseAuth();
     // products
     const { data: products } = await sb.from('cms_products')
       .select('slug,updated_at').eq('status','published');
@@ -34,7 +34,7 @@ export async function GET() {
       loc: `${SITE}/blog/${b.slug}`, pri: '0.6', freq: 'monthly',
       lastmod: b.published_at ? new Date(b.published_at).toISOString().slice(0,10) : undefined
     }));
-  } catch(e) { /* DB down — static pages still ship */ }
+  } catch(e) { console.error('[sitemap] DB load failed:', e?.message || e); }
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
