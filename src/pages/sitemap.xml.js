@@ -43,6 +43,6 @@ ${urls.map(u=>`  <url><loc>${u.loc}</loc>${u.lastmod?`<lastmod>${u.lastmod}</las
 
   return new Response(body, {
     status: 200,
-    headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' }
+    headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'no-cache, no-store, must-revalidate' }
   });
 }
