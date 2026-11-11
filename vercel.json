@@ -1,7 +1,10 @@
 {
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/sitemap-live.xml" }
+  ],
   "headers": [
     {
-      "source": "/sitemap.xml",
+      "source": "/sitemap(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
