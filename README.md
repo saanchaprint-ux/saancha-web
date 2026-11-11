@@ -68,14 +68,16 @@ kuch aur edit nahi karna, bas `USE_LOCAL = true`.
 
 - Har page ka apna `<title>` + meta description (`materials-content.js` me `seoTitle`, `seoDesc`)
 - Product + FAQ + Breadcrumb schema (Google rich results ke liye)
-- `public/sitemap.xml` aur `public/robots.txt` — domain badlo to yahan bhi URL update karna
+- `src/pages/sitemap.xml.js` — public landing pages yahan list hain; published products aur blog posts Supabase se aate hain
+- `public/robots.txt` — domain badlo to Sitemap URL yahan update karna
 - `astro.config.mjs` me `site:` — apna domain daalo (SEO ke liye zaroori)
 - Open Graph tags (WhatsApp/social pe link share karne pe preview)
 
 Domain aane pe badlo:
 - `astro.config.mjs` → `site`
 - `src/data/site.js` → `domain`
-- `public/sitemap.xml` + `public/robots.txt` → URLs
+- `src/data/site.js` → domain (sitemap URLs ke liye)
+- `public/robots.txt` → Sitemap URL
 
 ---
 
